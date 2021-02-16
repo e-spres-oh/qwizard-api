@@ -5,7 +5,9 @@ class Question < ApplicationRecord
   validates :time_limit, presence: true
   validates :points, presence: true
   validates :answer_type, presence: true
-  validates :order, presence: true
+  validates :order, presence: true, uniqueness: { scope: :quiz_id }
 
   enum answer_type: [:single, :multiple]
+
+  belongs_to :quiz
 end
