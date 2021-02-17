@@ -68,6 +68,8 @@ ActiveRecord::Schema.define(version: 2021_02_17_223615) do
     t.string "title"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.bigint "user_id"
+    t.index ["user_id"], name: "index_quizzes_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -86,4 +88,5 @@ ActiveRecord::Schema.define(version: 2021_02_17_223615) do
   add_foreign_key "player_answers", "players"
   add_foreign_key "players", "lobbies"
   add_foreign_key "questions", "quizzes"
+  add_foreign_key "quizzes", "users"
 end

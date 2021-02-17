@@ -5,5 +5,7 @@ class User < ApplicationRecord
   validates :email, presence: true
   validates :password, presence: true
 
+  has_many :quizzes, dependent: :destroy
+
   enum hat: [:star, :earth, :spiral, :gnome, :nature, :fire, :swamp, :water]
 end
