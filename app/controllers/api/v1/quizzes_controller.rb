@@ -2,7 +2,7 @@
 
 module Api
   module V1
-    class QuizzesController < ApplicationController
+    class QuizzesController < AuthenticatedController
       def index
         @quizzes = Quiz.all
         render :index
