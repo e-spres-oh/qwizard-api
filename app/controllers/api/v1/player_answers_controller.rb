@@ -3,13 +3,15 @@
 module Api
   module V1
     class PlayerAnswersController < ApplicationController
+      before_action :set_player, only: [:index, :create]
+
       def index
-        @player_answers = PlayerAnswer.all
+        @player_answers = @player.player_answers.all
         render :index
       end
 
       def create
-        @player_answer = PlayerAnswer.new(player_answer_params)
+        @player_answer = PlayerAnswer.new(player_answer_params.merge(player: @player))
 
         if @player_answer.save
           render :show, status: :created
@@ -42,8 +44,12 @@ module Api
 
       private
 
+      def set_player
+        @player = Player.find(params[:player_id])
+      end
+
       def player_answer_params
-        params.require(:player_answer).permit(:player_id, :answer_id)
+        params.require(:player_answer).permit(:answer_id)
       end
     end
   end

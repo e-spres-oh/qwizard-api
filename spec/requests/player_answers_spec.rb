@@ -4,7 +4,9 @@ require 'rails_helper'
 
 RSpec.describe 'PlayerAnswersAPI', type: :request do
   describe 'index' do
-    subject { get api_v1_player_answers_path }
+    let(:player) { FactoryBot.create(:player) }
+
+    subject { get api_v1_player_player_answers_path(player_id: player.id) }
 
     it 'responds with successful HTTP status' do
       subject
@@ -13,8 +15,8 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      player_one_answer = FactoryBot.create(:player_answer)
-      player_two_answer = FactoryBot.create(:player_answer)
+      player_one_answer = FactoryBot.create(:player_answer, player: player)
+      player_two_answer = FactoryBot.create(:player_answer, player: player)
 
       subject
 
@@ -27,10 +29,10 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
     let(:answer) { FactoryBot.create(:answer) }
     let(:player) { FactoryBot.create(:player) }
     let(:player_answer_params) do
-      { player_id: player.id, answer_id: answer.id }
+      { answer_id: answer.id }
     end
 
-    subject { post api_v1_player_answers_path, params: { player_answer: player_answer_params } }
+    subject { post api_v1_player_player_answers_path(player_id: player.id), params: { player_answer: player_answer_params } }
 
     it 'responds with created HTTP status' do
       subject

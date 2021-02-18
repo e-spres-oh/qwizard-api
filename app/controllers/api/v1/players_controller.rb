@@ -3,13 +3,15 @@
 module Api
   module V1
     class PlayersController < ApplicationController
+      before_action :set_lobby, only: [:index, :create]
+
       def index
-        @players = Player.all
+        @players = @lobby.players.all
         render :index
       end
 
       def create
-        @player = Player.new(player_params)
+        @player = Player.new(player_params.merge(lobby: @lobby))
 
         if @player.save
           render :show, status: :created
@@ -42,8 +44,12 @@ module Api
 
       private
 
+      def set_lobby
+        @lobby = Lobby.find(params[:lobby_id])
+      end
+
       def player_params
-        params.require(:player).permit(:name, :hat, :lobby_id)
+        params.require(:player).permit(:name, :hat)
       end
     end
   end

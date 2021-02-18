@@ -3,13 +3,15 @@
 module Api
   module V1
     class AnswersController < ApplicationController
+      before_action :set_question, only: [:index, :create]
+
       def index
-        @answers = Answer.all
+        @answers = @question.answers.all
         render :index
       end
 
       def create
-        @answer = Answer.new(answer_params)
+        @answer = Answer.new(answer_params.merge(question: @question))
 
         if @answer.save
           render :show, status: :created
@@ -42,8 +44,12 @@ module Api
 
       private
 
+      def set_question
+        @question = Question.find(params[:question_id])
+      end
+
       def answer_params
-        params.require(:answer).permit(:title, :is_correct, :question_id)
+        params.require(:answer).permit(:title, :is_correct)
       end
     end
   end

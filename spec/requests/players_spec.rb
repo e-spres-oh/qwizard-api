@@ -4,7 +4,9 @@ require 'rails_helper'
 
 RSpec.describe 'PlayersAPI', type: :request do
   describe 'index' do
-    subject { get api_v1_players_path }
+    let(:lobby) { FactoryBot.create(:lobby) }
+
+    subject { get api_v1_lobby_players_path(lobby_id: lobby.id) }
 
     it 'responds with successful HTTP status' do
       subject
@@ -13,8 +15,8 @@ RSpec.describe 'PlayersAPI', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      foo_player = FactoryBot.create(:player)
-      bar_player = FactoryBot.create(:player)
+      foo_player = FactoryBot.create(:player, lobby: lobby)
+      bar_player = FactoryBot.create(:player, lobby: lobby)
 
       subject
 
@@ -26,10 +28,10 @@ RSpec.describe 'PlayersAPI', type: :request do
   describe 'create' do
     let(:lobby) { FactoryBot.create(:lobby) }
     let(:player_params) do
-      { name: 'foo', hat: 'star', lobby_id: lobby.id }
+      { name: 'foo', hat: 'star' }
     end
 
-    subject { post api_v1_players_path, params: { player: player_params } }
+    subject { post api_v1_lobby_players_path(lobby_id: lobby.id), params: { player: player_params } }
 
     it 'responds with created HTTP status' do
       subject
@@ -44,7 +46,7 @@ RSpec.describe 'PlayersAPI', type: :request do
 
       expect(player.name).to eq(player_params[:name])
       expect(player.hat).to eq(player_params[:hat])
-      expect(player.lobby).to eq(Lobby.find(player_params[:lobby_id]))
+      expect(player.lobby).to eq(lobby)
     end
 
     it 'responds with the created Player model' do
@@ -69,12 +71,7 @@ RSpec.describe 'PlayersAPI', type: :request do
         subject
 
         parsed_response = JSON.parse(response.body, symbolize_names: true)
-        expect(parsed_response).to eq(
-          errors: [
-            { attribute: 'hat', error: 'blank', message: 'can\'t be blank' },
-            { attribute: 'lobby', error: 'blank', message: 'must exist' }
-          ]
-        )
+        expect(parsed_response).to eq(errors: [{ attribute: 'hat', error: 'blank', message: 'can\'t be blank' }])
       end
     end
   end
