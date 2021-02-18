@@ -13,10 +13,8 @@ RSpec.describe 'AnswersAPI', type: :request do
     end
 
     it 'responds with the current answers' do
-      quiz = Quiz.create(title: 'quiz')
-      question = Question.create(title: 'question', time_limit: 30, points: 100, order: 1, answer_type: 'single', quiz: quiz)
-      foo_answer = Answer.create(title: 'foo', is_correct: true, question: question)
-      bar_answer = Answer.create(title: 'bar', is_correct: false, question: question)
+      foo_answer = FactoryBot.create(:answer)
+      bar_answer = FactoryBot.create(:answer)
 
       subject
 
@@ -26,8 +24,7 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'create' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
+    let(:question) { FactoryBot.create(:question) }
     let(:answer_params) do
       { title: 'foo', is_correct: true, question_id: question.id }
     end
@@ -83,9 +80,7 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'show' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
-    let(:answer) { Answer.create(title: 'foo', is_correct: true, question: question) }
+    let(:answer) { FactoryBot.create(:answer) }
 
     subject { get api_v1_answer_path(id: answer.id) }
 
@@ -104,9 +99,7 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
-    let(:answer) { Answer.create(title: 'foo', is_correct: true, question: question) }
+    let(:answer) { FactoryBot.create(:answer) }
     let(:answer_params) do
       { is_correct: false }
     end
@@ -133,9 +126,7 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
-    let(:answer) { Answer.create(title: 'foo', is_correct: true, question: question) }
+    let(:answer) { FactoryBot.create(:answer) }
 
     subject { delete api_v1_answer_path(id: answer.id) }
 

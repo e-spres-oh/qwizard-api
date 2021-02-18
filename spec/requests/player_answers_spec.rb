@@ -13,14 +13,8 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      quiz = Quiz.create(title: 'quiz')
-      question = Question.create(title: 'question', time_limit: 30, points: 1, answer_type: 'single', order: 100, quiz: quiz)
-      answer = Answer.create(title: 'answer', is_correct: true, question: question)
-      lobby = Lobby.create(code: 'lobby', status: 'pending', quiz: quiz)
-      player_one = Player.create(name: 'player_one', hat: 'star', lobby: lobby)
-      player_two = Player.create(name: 'player_two', hat: 'star', lobby: lobby)
-      player_one_answer = PlayerAnswer.create(answer: answer, player: player_one)
-      player_two_answer = PlayerAnswer.create(answer: answer, player: player_two)
+      player_one_answer = FactoryBot.create(:player_answer)
+      player_two_answer = FactoryBot.create(:player_answer)
 
       subject
 
@@ -30,11 +24,8 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'create' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
-    let(:answer) { Answer.create(title: 'answer', is_correct: true, question: question) }
-    let(:lobby) { Lobby.create(code: 'lobby', status: 'pending', quiz: quiz) }
-    let(:player) { Player.create(name: 'player', hat: 'star', lobby: lobby) }
+    let(:answer) { FactoryBot.create(:answer) }
+    let(:player) { FactoryBot.create(:player) }
     let(:player_answer_params) do
       { player_id: player.id, answer_id: answer.id }
     end
@@ -84,12 +75,7 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'show' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
-    let(:answer) { Answer.create(title: 'answer', is_correct: true, question: question) }
-    let(:lobby) { Lobby.create(code: 'lobby', status: 'pending', quiz: quiz) }
-    let(:player) { Player.create(name: 'player', hat: 'star', lobby: lobby) }
-    let(:player_answer) { PlayerAnswer.create(player: player, answer: answer) }
+    let(:player_answer) { FactoryBot.create(:player_answer) }
 
     subject { get api_v1_player_answer_path(id: player_answer.id) }
 
@@ -108,13 +94,8 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
-    let(:answer) { Answer.create(title: 'answer', is_correct: true, question: question) }
-    let(:new_answer) { Answer.create(title: 'new_answer', is_correct: false, question: question) }
-    let(:lobby) { Lobby.create(code: 'lobby', status: 'pending', quiz: quiz) }
-    let(:player) { Player.create(name: 'player', hat: 'star', lobby: lobby) }
-    let(:player_answer) { PlayerAnswer.create(player: player, answer: answer) }
+    let(:player_answer) { FactoryBot.create(:player_answer) }
+    let(:new_answer) { FactoryBot.create(:answer) }
     let(:player_answer_params) do
       { answer_id: new_answer.id }
     end
@@ -141,12 +122,7 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
-    let(:answer) { Answer.create(title: 'answer', is_correct: true, question: question) }
-    let(:lobby) { Lobby.create(code: 'lobby', status: 'pending', quiz: quiz) }
-    let(:player) { Player.create(name: 'player', hat: 'star', lobby: lobby) }
-    let(:player_answer) { PlayerAnswer.create(player: player, answer: answer) }
+    let(:player_answer) { FactoryBot.create(:player_answer) }
 
     subject { delete api_v1_player_answer_path(id: player_answer.id) }
 

@@ -13,10 +13,8 @@ RSpec.describe 'PlayersAPI', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      quiz = Quiz.create(title: 'quiz')
-      lobby = Lobby.create(code: 'foo', status: 'pending', quiz: quiz)
-      foo_player = Player.create(name: 'foo', hat: 'star', lobby: lobby)
-      bar_player = Player.create(name: 'bar', hat: 'star', lobby: lobby)
+      foo_player = FactoryBot.create(:player)
+      bar_player = FactoryBot.create(:player)
 
       subject
 
@@ -26,8 +24,7 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'create' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:lobby) { Lobby.create(code: 'lobby', status: 'pending', quiz: quiz) }
+    let(:lobby) { FactoryBot.create(:lobby) }
     let(:player_params) do
       { name: 'foo', hat: 'star', lobby_id: lobby.id }
     end
@@ -83,9 +80,7 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'show' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:lobby) { Lobby.create(code: 'lobby', status: 'pending', quiz: quiz) }
-    let(:player) { Player.create(name: 'foo', hat: 'star', lobby: lobby) }
+    let(:player) { FactoryBot.create(:player) }
 
     subject { get api_v1_player_path(id: player.id) }
 
@@ -104,9 +99,7 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:lobby) { Lobby.create(code: 'lobby', status: 'pending', quiz: quiz) }
-    let(:player) { Player.create(name: 'foo', hat: 'star', lobby: lobby) }
+    let(:player) { FactoryBot.create(:player) }
     let(:player_params) do
       { hat: 'earth' }
     end
@@ -133,9 +126,7 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:lobby) { Lobby.create(code: 'lobby', status: 'pending', quiz: quiz) }
-    let(:player) { Player.create(name: 'foo', hat: 'star', lobby: lobby) }
+    let(:player) { FactoryBot.create(:player) }
 
     subject { delete api_v1_player_path(id: player.id) }
 

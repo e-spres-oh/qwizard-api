@@ -13,9 +13,8 @@ RSpec.describe 'LobbiesAPI', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      quiz = Quiz.create(title: 'quiz')
-      foo_lobby = Lobby.create(code: 'foo', status: 'pending', quiz: quiz)
-      bar_lobby = Lobby.create(code: 'bar', status: 'pending', quiz: quiz)
+      foo_lobby = FactoryBot.create(:lobby)
+      bar_lobby = FactoryBot.create(:lobby)
 
       subject
 
@@ -25,7 +24,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'create' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
+    let(:quiz) { FactoryBot.create(:quiz) }
     let(:lobby_params) do
       { status: 'pending', quiz_id: quiz.id, current_question_index: 2 }
     end
@@ -77,8 +76,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'show' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:lobby) { Lobby.create(code: 'foo', status: 'pending', quiz: quiz) }
+    let(:lobby) { FactoryBot.create(:lobby) }
 
     subject { get api_v1_lobby_path(id: lobby.id) }
 
@@ -97,8 +95,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'update' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:lobby) { Lobby.create(code: 'foo', status: 'pending', quiz: quiz) }
+    let(:lobby) { FactoryBot.create(:lobby) }
     let(:lobby_params) do
       { status: 'in_progress' }
     end
@@ -125,8 +122,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:lobby) { Lobby.create(code: 'foo', status: 'pending', quiz: quiz) }
+    let(:lobby) { FactoryBot.create(:lobby) }
 
     subject { delete api_v1_lobby_path(id: lobby.id) }
 

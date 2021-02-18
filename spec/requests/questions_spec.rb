@@ -13,9 +13,8 @@ RSpec.describe 'QuestionsAPI', type: :request do
     end
 
     it 'responds with the current questions' do
-      quiz = Quiz.create(title: 'quiz')
-      foo_question = Question.create(title: 'foo', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz)
-      bar_question = Question.create(title: 'bar', time_limit: 30, points: 100, answer_type: 'single', order: 2, quiz: quiz)
+      foo_question = FactoryBot.create(:question)
+      bar_question = FactoryBot.create(:question)
 
       subject
 
@@ -82,8 +81,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
   end
 
   describe 'show' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'foo', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
+    let(:question) { FactoryBot.create(:question) }
 
     subject { get api_v1_question_path(id: question.id) }
 
@@ -102,8 +100,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
   end
 
   describe 'update' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'foo', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
+    let(:question) { FactoryBot.create(:question) }
     let(:question_params) do
       { time_limit: 60 }
     end
@@ -130,8 +127,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
-    let(:question) { Question.create(title: 'foo', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz) }
+    let(:question) { FactoryBot.create(:question) }
 
     subject { delete api_v1_question_path(id: question.id) }
 
