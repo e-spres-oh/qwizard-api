@@ -3,14 +3,19 @@
 module Api
   module V1
     class PlayerAnswersController < AuthenticatedController
+      before_action :require_authorisation, only: [:show, :update, :destroy]
       before_action :set_player, only: [:index, :create]
 
       def index
+        return head :unauthorized unless @player.lobby.quiz.user == current_user
+
         @player_answers = @player.player_answers.all
         render :index
       end
 
       def create
+        return head :unauthorized unless @player.lobby.quiz.user == current_user
+
         @player_answer = PlayerAnswer.new(player_answer_params.merge(player: @player))
 
         if @player_answer.save
@@ -43,6 +48,12 @@ module Api
       end
 
       private
+
+      def require_authorisation
+        player_answer = PlayerAnswer.find(params[:id])
+
+        head :unauthorized if player_answer.player.lobby.quiz.user != current_user
+      end
 
       def set_player
         @player = Player.find(params[:player_id])

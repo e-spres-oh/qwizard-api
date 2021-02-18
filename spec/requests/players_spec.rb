@@ -8,7 +8,8 @@ RSpec.describe 'PlayersAPI', type: :request do
   before { post api_v1_login_path, params: { user: { username: user.username, password: user.password } } }
 
   describe 'index' do
-    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
 
     subject { get api_v1_lobby_players_path(lobby_id: lobby.id) }
 
@@ -30,7 +31,8 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'create' do
-    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
     let(:player_params) do
       { name: 'foo', hat: 'star' }
     end
@@ -81,7 +83,9 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'show' do
-    let(:player) { FactoryBot.create(:player) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
 
     subject { get api_v1_player_path(id: player.id) }
 
@@ -100,7 +104,9 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:player) { FactoryBot.create(:player) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
     let(:player_params) do
       { hat: 'earth' }
     end
@@ -127,7 +133,9 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:player) { FactoryBot.create(:player) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
 
     subject { delete api_v1_player_path(id: player.id) }
 

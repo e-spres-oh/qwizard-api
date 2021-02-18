@@ -8,7 +8,9 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   before { post api_v1_login_path, params: { user: { username: user.username, password: user.password } } }
 
   describe 'index' do
-    let(:player) { FactoryBot.create(:player) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
 
     subject { get api_v1_player_player_answers_path(player_id: player.id) }
 
@@ -31,7 +33,9 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
 
   describe 'create' do
     let(:answer) { FactoryBot.create(:answer) }
-    let(:player) { FactoryBot.create(:player) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
     let(:player_answer_params) do
       { answer_id: answer.id }
     end
@@ -81,7 +85,10 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'show' do
-    let(:player_answer) { FactoryBot.create(:player_answer) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player_answer) { FactoryBot.create(:player_answer, player: player) }
 
     subject { get api_v1_player_answer_path(id: player_answer.id) }
 
@@ -100,7 +107,10 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:player_answer) { FactoryBot.create(:player_answer) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player_answer) { FactoryBot.create(:player_answer, player: player) }
     let(:new_answer) { FactoryBot.create(:answer) }
     let(:player_answer_params) do
       { answer_id: new_answer.id }
@@ -128,7 +138,10 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:player_answer) { FactoryBot.create(:player_answer) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player_answer) { FactoryBot.create(:player_answer, player: player) }
 
     subject { delete api_v1_player_answer_path(id: player_answer.id) }
 

@@ -8,7 +8,8 @@ RSpec.describe 'AnswersAPI', type: :request do
   before { post api_v1_login_path, params: { user: { username: user.username, password: user.password } } }
 
   describe 'index' do
-    let(:question) { FactoryBot.create(:question) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
 
     subject { get api_v1_question_answers_path(question_id: question.id) }
 
@@ -30,7 +31,8 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'create' do
-    let(:question) { FactoryBot.create(:question) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
     let(:answer_params) do
       { title: 'foo', is_correct: true }
     end
@@ -81,7 +83,9 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'show' do
-    let(:answer) { FactoryBot.create(:answer) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:answer) { FactoryBot.create(:answer, question: question) }
 
     subject { get api_v1_answer_path(id: answer.id) }
 
@@ -100,7 +104,9 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:answer) { FactoryBot.create(:answer) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:answer) { FactoryBot.create(:answer, question: question) }
     let(:answer_params) do
       { is_correct: false }
     end
@@ -127,7 +133,9 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:answer) { FactoryBot.create(:answer) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:answer) { FactoryBot.create(:answer, question: question) }
 
     subject { delete api_v1_answer_path(id: answer.id) }
 

@@ -3,14 +3,19 @@
 module Api
   module V1
     class LobbiesController < AuthenticatedController
+      before_action :require_authorisation, only: [:show, :update, :destroy]
       before_action :set_quiz, only: [:index, :create]
 
       def index
+        return head :unauthorized unless @quiz.user == current_user
+
         @lobbies = @quiz.lobbies.all
         render :index
       end
 
       def create
+        return head :unauthorized unless @quiz.user == current_user
+
         @lobby = Lobby.new(lobby_params.merge(code: SecureRandom.alphanumeric(6), quiz: @quiz))
 
         if @lobby.save
@@ -43,6 +48,12 @@ module Api
       end
 
       private
+
+      def require_authorisation
+        lobby = Lobby.find(params[:id])
+
+        head :unauthorized if lobby.quiz.user != current_user
+      end
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
