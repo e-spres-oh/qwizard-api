@@ -3,8 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe 'QuestionsAPI', type: :request do
+  let(:quiz) { FactoryBot.create(:quiz) }
+
   describe 'index' do
-    subject { get api_v1_questions_path }
+    subject { get api_v1_quiz_questions_path(quiz_id: quiz.id) }
 
     it 'responds with successful HTTP status' do
       subject
@@ -13,8 +15,8 @@ RSpec.describe 'QuestionsAPI', type: :request do
     end
 
     it 'responds with the current questions' do
-      foo_question = FactoryBot.create(:question)
-      bar_question = FactoryBot.create(:question)
+      foo_question = FactoryBot.create(:question, quiz: quiz)
+      bar_question = FactoryBot.create(:question, quiz: quiz)
 
       subject
 
@@ -24,12 +26,11 @@ RSpec.describe 'QuestionsAPI', type: :request do
   end
 
   describe 'create' do
-    let(:quiz) { Quiz.create(title: 'quiz') }
     let(:question_params) do
-      { title: 'test', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz_id: quiz.id }
+      { title: 'test', time_limit: 30, points: 100, answer_type: 'single', order: 1 }
     end
 
-    subject { post api_v1_questions_path, params: { question: question_params } }
+    subject { post api_v1_quiz_questions_path(quiz_id: quiz.id), params: { question: question_params } }
 
     it 'responds with created HTTP status' do
       subject
@@ -45,7 +46,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
       expect(question.title).to eq(question_params[:title])
       expect(question.time_limit).to eq(question_params[:time_limit])
       expect(question.points).to eq(question_params[:points])
-      expect(question.quiz).to eq(Quiz.find(question_params[:quiz_id]))
+      expect(question.quiz).to eq(quiz)
     end
 
     it 'responds with the created Question model' do
@@ -70,18 +71,13 @@ RSpec.describe 'QuestionsAPI', type: :request do
         subject
 
         parsed_response = JSON.parse(response.body, symbolize_names: true)
-        expect(parsed_response).to eq(
-          errors: [
-            { attribute: 'title', error: 'blank', message: 'can\'t be blank' },
-            { attribute: 'quiz', error: 'blank', message: 'must exist' }
-          ]
-        )
+        expect(parsed_response).to eq(errors: [{ attribute: 'title', error: 'blank', message: 'can\'t be blank' }])
       end
     end
   end
 
   describe 'show' do
-    let(:question) { FactoryBot.create(:question) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
 
     subject { get api_v1_question_path(id: question.id) }
 
@@ -100,7 +96,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
   end
 
   describe 'update' do
-    let(:question) { FactoryBot.create(:question) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
     let(:question_params) do
       { time_limit: 60 }
     end
@@ -127,7 +123,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:question) { FactoryBot.create(:question) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
 
     subject { delete api_v1_question_path(id: question.id) }
 
