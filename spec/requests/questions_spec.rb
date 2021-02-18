@@ -3,7 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe 'QuestionsAPI', type: :request do
-  let(:quiz) { FactoryBot.create(:quiz) }
+  let(:user) { FactoryBot.create(:user) }
+  let(:quiz) { FactoryBot.create(:quiz, user: user) }
+
+  before { post api_v1_login_path, params: { user: { username: quiz.user.username, password: quiz.user.password } } }
 
   describe 'index' do
     subject { get api_v1_quiz_questions_path(quiz_id: quiz.id) }

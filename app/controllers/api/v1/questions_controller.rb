@@ -2,15 +2,20 @@
 
 module Api
   module V1
-    class QuestionsController < ApplicationController
+    class QuestionsController < AuthenticatedController
+      before_action :require_authentication, except: [:index, :show]
+      before_action :require_authorisation, only: [:update, :destroy]
       before_action :set_quiz, only: [:index, :create]
 
       def index
         @questions = @quiz.questions.all
+
         render :index
       end
 
       def create
+        return head :unauthorized unless @quiz.user == current_user
+
         @question = Question.new(question_params.merge(quiz: @quiz))
 
         if @question.save
@@ -43,6 +48,12 @@ module Api
       end
 
       private
+
+      def require_authorisation
+        question = Question.find(params[:id])
+
+        head :unauthorized if question.quiz.user != current_user
+      end
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
