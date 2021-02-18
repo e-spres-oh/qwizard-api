@@ -2,7 +2,7 @@
 
 module Api
   module V1
-    class LobbiesController < ApplicationController
+    class LobbiesController < AuthenticatedController
       before_action :set_quiz, only: [:index, :create]
 
       def index

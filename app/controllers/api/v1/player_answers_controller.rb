@@ -2,7 +2,7 @@
 
 module Api
   module V1
-    class PlayerAnswersController < ApplicationController
+    class PlayerAnswersController < AuthenticatedController
       before_action :set_player, only: [:index, :create]
 
       def index

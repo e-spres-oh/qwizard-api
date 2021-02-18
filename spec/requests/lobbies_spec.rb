@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe 'LobbiesAPI', type: :request do
+  let(:user) { FactoryBot.create(:user) }
+
+  before { post api_v1_login_path, params: { user: { username: user.username, password: user.password } } }
+
   describe 'index' do
     let(:quiz) { FactoryBot.create(:quiz) }
 

@@ -2,7 +2,8 @@
 
 module Api
   module V1
-    class PlayersController < ApplicationController
+    class PlayersController < AuthenticatedController
+      before_action :require_authentication, except: [:index, :show]
       before_action :set_lobby, only: [:index, :create]
 
       def index

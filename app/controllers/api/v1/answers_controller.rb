@@ -2,7 +2,8 @@
 
 module Api
   module V1
-    class AnswersController < ApplicationController
+    class AnswersController < AuthenticatedController
+      before_action :require_authentication, except: [:index, :show]
       before_action :set_question, only: [:index, :create]
 
       def index
