@@ -27,7 +27,7 @@ module Api
         @lobby.update!(status: :in_progress)
         Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
 
-        Pusher.trigger(@lobby.code, Lobby::QUESTION_START, { question_index: 1 })
+        NotifyQuestionStartJob.perform_now(lobby_id: @lobby.id, question_index: 1)
 
         render :show
       end
