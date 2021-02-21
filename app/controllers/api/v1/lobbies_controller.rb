@@ -3,9 +3,18 @@
 module Api
   module V1
     class LobbiesController < AuthenticatedController
-      before_action :require_authentication, except: [:from_code]
+      before_action :require_authentication, except: [:from_code, :join]
       before_action :require_authorisation, only: [:show, :update, :destroy]
       before_action :set_quiz, only: [:index, :create]
+
+      def join
+        lobby = Lobby.find(params[:id])
+
+        @player = lobby.players.create(player_params)
+
+        Pusher.trigger(lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
+        render :player, status: :created
+      end
 
       def from_code
         @lobby = Lobby.find_by(code: params[:code])
@@ -66,6 +75,10 @@ module Api
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
+      end
+
+      def player_params
+        params.require(:player).permit(:name, :hat)
       end
 
       def lobby_params

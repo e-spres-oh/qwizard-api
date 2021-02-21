@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Lobby < ApplicationRecord
+  PLAYER_JOIN = 'player_join'
+
   validates :code, presence: true
   validates :status, presence: true
   validates :current_question_index, presence: true
