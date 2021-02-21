@@ -26,6 +26,9 @@ module Api
         @lobby = Lobby.find(params[:id])
         @lobby.update!(status: :in_progress)
         Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
+
+        Pusher.trigger(@lobby.code, Lobby::QUESTION_START, { question_index: 1 })
+
         render :show
       end
 
