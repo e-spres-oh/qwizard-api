@@ -3,6 +3,7 @@
 class Lobby < ApplicationRecord
   PLAYER_JOIN = 'player_join'
   LOBBY_START = 'lobby_start'
+  LOBBY_END = 'lobby_end'
   QUESTION_START = 'question_start'
   QUESTION_END = 'question_end'
   ANSWER_SENT = 'answer_sent'
