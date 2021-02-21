@@ -154,4 +154,34 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(parsed_response).to eq(lobby.as_json.merge('quiz_master' => lobby.quiz.user.username))
     end
   end
+
+  describe 'from_code' do
+    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:lobby_code) { lobby.code }
+
+    subject { get api_v1_lobby_from_code_path(code: lobby_code) }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with the requested Lobby model' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq(lobby.as_json.merge('quiz_master' => lobby.quiz.user.username))
+    end
+
+    context 'lobby not found' do
+      let(:lobby_code) { 'nonexistent' }
+
+      it 'responds with not found HTTP status' do
+        subject
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end

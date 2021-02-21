@@ -3,8 +3,17 @@
 module Api
   module V1
     class LobbiesController < AuthenticatedController
+      before_action :require_authentication, except: [:from_code]
       before_action :require_authorisation, only: [:show, :update, :destroy]
       before_action :set_quiz, only: [:index, :create]
+
+      def from_code
+        @lobby = Lobby.find_by(code: params[:code])
+
+        return head :not_found if @lobby.nil?
+
+        render :show
+      end
 
       def index
         return head :unauthorized unless @quiz.user == current_user
