@@ -262,4 +262,69 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START, {})
     end
   end
+
+  describe 'answer' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:answer1) { FactoryBot.create(:answer, question: question) }
+    let(:answer2) { FactoryBot.create(:answer, question: question) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+    end
+
+    subject { post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: player.id, answers: [answer1.id, answer2.id] } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'creates PlayerAnswer models for the specified request params' do
+      subject
+
+      expect(PlayerAnswer.find_by(player: player, answer: answer1)).to be_present
+      expect(PlayerAnswer.find_by(player: player, answer: answer2)).to be_present
+    end
+
+    it 'responds with the question\'s answers' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq(question.answers.as_json)
+    end
+
+    it 'triggers a ANSWER_SENT Pusher event' do
+      subject
+
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::ANSWER_SENT, { answer_count: 1 })
+    end
+
+    context 'existing answers' do
+      before { FactoryBot.create(:player_answer, player: player, answer: answer1) }
+
+      subject { post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: player.id, answers: [answer2.id] } }
+
+      it 'responds with successful HTTP status' do
+        subject
+
+        expect(response).to have_http_status(:success)
+      end
+
+      it 'creates PlayerAnswer models for the specified request params' do
+        subject
+
+        expect(PlayerAnswer.find_by(player: player, answer: answer2)).to be_present
+      end
+
+      it 'removes PlayerAnswer models which are no longer present in the request params' do
+        subject
+
+        expect(PlayerAnswer.find_by(player: player, answer: answer1)).to_not be_present
+      end
+    end
+  end
 end

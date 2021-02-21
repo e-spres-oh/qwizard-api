@@ -9,6 +9,7 @@ Rails.application.routes.draw do
         end
 
         resources :lobbies, shallow: true do
+          post :answer, on: :member
           post :join, on: :member
           post :start, on: :member
 
