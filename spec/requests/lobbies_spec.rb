@@ -184,4 +184,46 @@ RSpec.describe 'LobbiesAPI', type: :request do
       end
     end
   end
+
+  describe 'join' do
+    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:player_params) do
+      { name: 'foo', hat: 'star' }
+    end
+
+    before do
+      allow(Pusher).to receive(:trigger)
+    end
+
+    subject { post join_api_v1_lobby_path(id: lobby.id), params: { player: player_params } }
+
+    it 'responds with created HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:created)
+    end
+
+    it 'creates a new Player model with the request params' do
+      subject
+
+      player = Player.last
+
+      expect(player.name).to eq(player_params[:name])
+      expect(player.hat).to eq(player_params[:hat])
+      expect(player.lobby).to eq(lobby)
+    end
+
+    it 'responds with the created Player model' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq(Player.last.as_json)
+    end
+
+    it 'triggers a PLAYER_JOINED Pusher event' do
+      subject
+
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::PLAYER_JOIN, { id: Player.last.id })
+    end
+  end
 end
