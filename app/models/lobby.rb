@@ -2,6 +2,7 @@
 
 class Lobby < ApplicationRecord
   PLAYER_JOIN = 'player_join'
+  LOBBY_START = 'lobby_start'
 
   validates :code, presence: true
   validates :status, presence: true

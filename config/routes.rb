@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
         resources :lobbies, shallow: true do
           post :join, on: :member
+          post :start, on: :member
 
           resources :players, shallow: true do
             resources :player_answers, shallow: true
