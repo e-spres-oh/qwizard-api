@@ -28,5 +28,14 @@ RSpec.describe NotifyQuestionStartJob, type: :job do
 
       expect(lobby.reload.current_question_index).to eq(question.order)
     end
+
+    it 'performs NotifyQuestionEndJob after a set wait time' do
+      job_double = double(NotifyQuestionEndJob)
+      expect(NotifyQuestionEndJob).to receive(:set).with(wait: question.time_limit.seconds + Lobby::QUESTION_COUNTDOWN_DELAY_SECONDS)
+                                                   .and_return(job_double)
+      expect(job_double).to receive(:perform_later).with(lobby_id: lobby.id)
+
+      subject
+    end
   end
 end
