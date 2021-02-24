@@ -14,7 +14,7 @@ module Api
         if @quiz.save
           render :show, status: :created
         else
-          render json: @quiz.errors.full_messages, status: :unprocessable_entity
+          render 'api/v1/model_errors', locals: { errors: @quiz.errors }, status: :unprocessable_entity
         end
       end
 
@@ -29,7 +29,7 @@ module Api
         if @quiz.update(quiz_params)
           render :show
         else
-          render json: @quiz.errors.full_messages, status: :unprocessable_entity
+          render 'api/v1/model_errors', locals: { errors: @quiz.errors }, status: :unprocessable_entity
         end
       end
 
