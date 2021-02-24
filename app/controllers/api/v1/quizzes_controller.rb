@@ -4,38 +4,40 @@ module Api
   module V1
     class QuizzesController < ApplicationController
       def index
-        render json: Quiz.all
+        @quizzes = Quiz.all
+        render :index
       end
 
       def create
-        quiz = Quiz.new(quiz_params)
+        @quiz = Quiz.new(quiz_params)
 
-        if quiz.save
-          render json: quiz, status: :created
+        if @quiz.save
+          render :show, status: :created
         else
-          render json: quiz.errors.full_messages, status: :unprocessable_entity
+          render json: @quiz.errors.full_messages, status: :unprocessable_entity
         end
       end
 
       def show
-        render json: Quiz.find(params[:id])
+        @quiz = Quiz.find(params[:id])
+        render :show
       end
 
       def update
-        quiz = Quiz.find(params[:id])
+        @quiz = Quiz.find(params[:id])
 
-        if quiz.update(quiz_params)
-          render json: quiz
+        if @quiz.update(quiz_params)
+          render :show
         else
-          render json: quiz.errors.full_messages, status: :unprocessable_entity
+          render json: @quiz.errors.full_messages, status: :unprocessable_entity
         end
       end
 
       def destroy
-        quiz = Quiz.find(params[:id])
-        quiz.destroy
+        @quiz = Quiz.find(params[:id])
+        @quiz.destroy
 
-        render json: quiz
+        render :show
       end
 
       private
