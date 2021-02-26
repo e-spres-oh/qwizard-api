@@ -22,7 +22,7 @@ RSpec.describe 'Quizzes API', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq([foo_quiz, bar_quiz].as_json)
+      expect(parsed_response).to eq([foo_quiz, bar_quiz].map { |q| q.as_json.merge('image_url' => nil) })
     end
   end
 
@@ -49,7 +49,7 @@ RSpec.describe 'Quizzes API', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(Quiz.last.as_json)
+      expect(parsed_response).to eq(Quiz.last.as_json.merge('image_url' => nil))
     end
 
     context 'invalid parameters' do
@@ -90,7 +90,7 @@ RSpec.describe 'Quizzes API', type: :request do
         subject
 
         parsed_response = JSON.parse(response.body)
-        expect(parsed_response).to eq(quiz.as_json)
+        expect(parsed_response).to eq(quiz.as_json.merge('image_url' => nil))
       end
     end
   end
@@ -118,7 +118,7 @@ RSpec.describe 'Quizzes API', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(quiz.reload.as_json)
+      expect(parsed_response).to eq(quiz.reload.as_json.merge('image_url' => nil))
     end
   end
 
@@ -143,7 +143,7 @@ RSpec.describe 'Quizzes API', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(quiz.as_json)
+      expect(parsed_response).to eq(quiz.as_json.merge('image_url' => nil))
     end
   end
 end
