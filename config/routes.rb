@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: 'json' } do
     namespace :v1 do
       resources :quizzes do
+        post 'upload_image', action: :upload_image, on: :member
+
         resources :questions, shallow: true do
           resources :answers, shallow: true
         end

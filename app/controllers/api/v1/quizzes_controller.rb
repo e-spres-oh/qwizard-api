@@ -4,7 +4,7 @@ module Api
   module V1
     class QuizzesController < AuthenticatedController
       before_action :require_authentication, except: [:show]
-      before_action :require_authorisation, only: [:update, :destroy]
+      before_action :require_authorisation, only: [:update, :destroy, :upload_image]
 
       def index
         @quizzes = current_user.quizzes
@@ -16,6 +16,16 @@ module Api
 
         if @quiz.save
           render :show, status: :created
+        else
+          render 'api/v1/model_errors', locals: { errors: @quiz.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def upload_image
+        @quiz = Quiz.find(params[:id])
+
+        if @quiz.image.attach(params.require(:image))
+          render :show
         else
           render 'api/v1/model_errors', locals: { errors: @quiz.errors }, status: :unprocessable_entity
         end

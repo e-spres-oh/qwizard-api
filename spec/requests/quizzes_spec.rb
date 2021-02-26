@@ -72,6 +72,36 @@ RSpec.describe 'Quizzes API', type: :request do
     end
   end
 
+  describe 'upload_image' do
+    let(:quiz) { Quiz.create(title: 'foo', user: user) }
+    let(:image_file) { file_fixture('image.jpg') }
+    let(:image_part) do
+      Rack::Test::UploadedFile.new(image_file, 'image/jpg')
+    end
+    subject { post upload_image_api_v1_quiz_path(id: quiz.id), params: { image: image_part } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'updates the Quiz attributes' do
+      subject
+
+      expect(quiz.image.attached?).to be_truthy
+      expect(quiz.image.download.size).to eq(image_file.size)
+    end
+
+    it 'responds with the updated Quiz model' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expected = quiz.reload.as_json.merge('image_url' => rails_blob_path(quiz.image))
+      expect(parsed_response).to eq(expected)
+    end
+  end
+
   describe 'show' do
     let(:quiz) { FactoryBot.create(:quiz, user: user) }
 
