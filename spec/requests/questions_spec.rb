@@ -24,7 +24,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq([foo_question, bar_question].as_json)
+      expect(parsed_response).to eq([foo_question, bar_question].map { |q| q.as_json.merge('image_url' => nil) })
     end
   end
 
@@ -56,7 +56,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(Question.last.as_json)
+      expect(parsed_response).to eq(Question.last.as_json.merge('image_url' => nil))
     end
 
     context 'invalid parameters' do
@@ -79,6 +79,37 @@ RSpec.describe 'QuestionsAPI', type: :request do
     end
   end
 
+  describe 'upload_image' do
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:image_file) { file_fixture('image.jpg') }
+    let(:image_part) do
+      Rack::Test::UploadedFile.new(image_file, 'image/jpg')
+    end
+    subject { post upload_image_api_v1_question_path(id: question.id), params: { image: image_part } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'updates the Quiz attributes' do
+      subject
+
+      expect(question.image.attached?).to be_truthy
+      expect(question.image.download.size).to eq(image_file.size)
+    end
+
+    it 'responds with the updated Quiz model' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expected = question.reload.as_json.merge('image_url' => rails_blob_path(question.image))
+      expect(parsed_response).to eq(expected)
+    end
+  end
+
   describe 'show' do
     let(:question) { FactoryBot.create(:question, quiz: quiz) }
 
@@ -94,7 +125,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(question.as_json)
+      expect(parsed_response).to eq(question.as_json.merge('image_url' => nil))
     end
   end
 
@@ -121,7 +152,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(question.reload.as_json)
+      expect(parsed_response).to eq(question.reload.as_json.merge('image_url' => nil))
     end
   end
 
@@ -146,7 +177,7 @@ RSpec.describe 'QuestionsAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(question.as_json)
+      expect(parsed_response).to eq(question.as_json.merge('image_url' => nil))
     end
   end
 end

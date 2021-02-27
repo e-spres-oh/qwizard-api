@@ -8,6 +8,8 @@ Rails.application.routes.draw do
         post 'upload_image', action: :upload_image, on: :member
 
         resources :questions, shallow: true do
+          post 'upload_image', action: :upload_image, on: :member
+
           resources :answers, shallow: true
         end
 
