@@ -3,9 +3,14 @@
 module Api
   module V1
     class UsersController < AuthenticatedController
-      before_action :require_authentication, except: [:create]
-      before_action :set_user, only: [:show, :update, :destroy]
+      before_action :require_authentication, except: [:recover_password, :create]
+      before_action :set_user, only: [:recover_password, :show, :update, :destroy]
       before_action :require_authorisation, only: [:update, :destroy]
+
+      def recover_password
+        PasswordRecoveryMailer.with(user: @user).recover_password.deliver_later
+        head :ok
+      end
 
       def index
         @users = User.all
