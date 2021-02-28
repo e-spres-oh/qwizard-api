@@ -210,6 +210,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
       expect(player.name).to eq(player_params[:name])
       expect(player.hat).to eq(player_params[:hat])
+      expect(player.user).to eq(user)
       expect(player.lobby).to eq(lobby)
     end
 
@@ -224,6 +225,16 @@ RSpec.describe 'LobbiesAPI', type: :request do
       subject
 
       expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::PLAYER_JOIN, { id: Player.last.id })
+    end
+
+    context 'user not logged in' do
+      before { delete api_v1_logout_path }
+
+      it 'does not assign a User to the created Player model' do
+        subject
+
+        expect(Player.last.user).to be_nil
+      end
     end
   end
 
