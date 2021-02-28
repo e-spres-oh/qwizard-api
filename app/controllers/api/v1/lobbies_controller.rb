@@ -59,6 +59,7 @@ module Api
         lobby = Lobby.find(params[:id])
 
         @player = lobby.players.create(player_params)
+        @player.update!(user: current_user) if session[:user_id].present?
 
         Pusher.trigger(lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
