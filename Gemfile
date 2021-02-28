@@ -39,6 +39,7 @@ group :development, :test do
 
   # Rspec
   gem 'rspec-rails'
+  gem 'webmock'
 
   # FactoryBot
   gem 'factory_bot_rails'
