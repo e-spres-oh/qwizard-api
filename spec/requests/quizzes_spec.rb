@@ -97,7 +97,7 @@ RSpec.describe 'Quizzes API', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expected = quiz.reload.as_json.merge('image_url' => rails_blob_path(quiz.image))
+      expected        = quiz.reload.as_json.merge('image_url' => rails_blob_path(quiz.image))
       expect(parsed_response).to eq(expected)
     end
   end
@@ -174,6 +174,32 @@ RSpec.describe 'Quizzes API', type: :request do
 
       parsed_response = JSON.parse(response.body)
       expect(parsed_response).to eq(quiz.as_json.merge('image_url' => nil))
+    end
+  end
+
+  describe 'suggest_question' do
+    let(:answer) { FactoryBot.build(:answer) }
+
+    subject { get suggest_question_api_v1_quizzes_path }
+
+    before do
+      allow_any_instance_of(SuggestQuestion).to receive(:call)
+                                                  .and_return({ question: answer.question, answers: [answer] })
+    end
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with the destroyed Quiz model' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq(answer.question
+                                          .as_json
+                                          .merge('answers' => [answer.as_json], 'image_url' => nil))
     end
   end
 end
