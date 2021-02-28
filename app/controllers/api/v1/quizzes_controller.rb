@@ -6,6 +6,17 @@ module Api
       before_action :require_authentication, except: [:show]
       before_action :require_authorisation, only: [:update, :destroy, :upload_image]
 
+      def suggest_question
+        conn = Faraday.new('https://fv4gjddr9a.execute-api.us-east-2.amazonaws.com')
+        response = conn.get('Prod')
+        data = JSON.parse(response.body)
+
+        @question = Question.new(title: data['question'])
+        @answers = data['answers'].map { |answer| Answer.new(title: answer['body'], is_correct: answer['correct']) }
+
+        render :suggest
+      end
+
       def index
         @quizzes = current_user.quizzes
         render :index
