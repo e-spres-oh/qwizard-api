@@ -3,6 +3,9 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: 'json' } do
     namespace :v1 do
+
+      get 'lobbies/finished', to: 'lobbies#finished', as: :finished_lobbies
+
       resources :quizzes do
         get 'suggest_question', action: :suggest_question, on: :collection
         post 'upload_image', action: :upload_image, on: :member

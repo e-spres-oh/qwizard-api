@@ -19,4 +19,6 @@ class Lobby < ApplicationRecord
   has_many :players, dependent: :destroy
 
   enum status: [:pending, :in_progress, :finished]
+
+  scope :finished, -> { where(status: :finished) }
 end

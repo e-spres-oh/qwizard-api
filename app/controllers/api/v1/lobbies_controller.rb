@@ -7,6 +7,12 @@ module Api
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
+      def finished
+        @lobbies = current_user.lobbies.finished.joins(:quiz)
+
+        render :finished
+      end
+
       def players_done
         lobby = Lobby.find(params[:id])
         @players = lobby.players.to_a.select do |p|
