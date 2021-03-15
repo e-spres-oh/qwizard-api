@@ -3,7 +3,8 @@
 module Api
   module V1
     class QuizzesController < AuthenticatedController
-      before_action :require_authorisation, only: [:show, :update, :destroy]
+      before_action :require_authentication, except: [:show]
+      before_action :require_authorisation, only: [:update, :destroy]
 
       def index
         @quizzes = current_user.quizzes

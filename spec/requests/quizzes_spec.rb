@@ -77,17 +77,21 @@ RSpec.describe 'Quizzes API', type: :request do
 
     subject { get api_v1_quiz_path(id: quiz.id) }
 
-    it 'responds with successful HTTP status' do
-      subject
+    context 'not authenticated' do
+      before { delete api_v1_logout_path }
 
-      expect(response).to have_http_status(:success)
-    end
+      it 'responds with successful HTTP status' do
+        subject
 
-    it 'responds with the requested Quiz model' do
-      subject
+        expect(response).to have_http_status(:success)
+      end
 
-      parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(quiz.as_json)
+      it 'responds with the requested Quiz model' do
+        subject
+
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq(quiz.as_json)
+      end
     end
   end
 
