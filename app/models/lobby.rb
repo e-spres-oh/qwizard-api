@@ -8,6 +8,7 @@ class Lobby < ApplicationRecord
   ANSWER_SENT = 'answer_sent'
 
   QUESTION_COUNTDOWN_DELAY_SECONDS = 3.seconds
+  SHOW_SCORE_DELAY_SECONDS = 10.seconds
 
   validates :code, presence: true
   validates :status, presence: true
