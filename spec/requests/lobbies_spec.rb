@@ -25,7 +25,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq([foo_lobby, bar_lobby].as_json)
+      expect(parsed_response).to eq([foo_lobby, bar_lobby].map { |q| q.as_json.merge('quiz_master' => quiz.user.username) })
     end
   end
 
@@ -58,7 +58,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(Lobby.last.as_json)
+      expect(parsed_response).to eq(Lobby.last.as_json.merge('quiz_master' => quiz.user.username))
     end
 
     context 'invalid parameters' do
@@ -97,7 +97,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(lobby.as_json)
+      expect(parsed_response).to eq(lobby.as_json.merge('quiz_master' => lobby.quiz.user.username))
     end
   end
 
@@ -125,7 +125,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(lobby.reload.as_json)
+      expect(parsed_response).to eq(lobby.reload.as_json.merge('quiz_master' => lobby.quiz.user.username))
     end
   end
 
@@ -151,7 +151,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq(lobby.as_json)
+      expect(parsed_response).to eq(lobby.as_json.merge('quiz_master' => lobby.quiz.user.username))
     end
   end
 end
