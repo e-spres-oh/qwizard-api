@@ -204,4 +204,33 @@ RSpec.describe 'Users API', type: :request do
       subject
     end
   end
+
+  describe 'recover_password' do
+    let(:user) { FactoryBot.create(:user, recovery_token: 'foo') }
+
+    subject { post recover_password_api_v1_users_path, params: { recovery_token: user.recovery_token } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'resets the User model password' do
+      old_password = user.password
+
+      subject
+
+      expect(user.reload.password).not_to eq(old_password)
+    end
+
+    it 'sends a recover_password email to the User' do
+      mail = double(:mail)
+      expect(PasswordRecoveryMailer).to receive(:with).with(user: user).and_return(mail)
+      expect(mail).to receive(:recover_password).and_return(mail)
+      expect(mail).to receive(:deliver_later)
+
+      subject
+    end
+  end
 end
