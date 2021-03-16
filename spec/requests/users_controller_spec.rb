@@ -146,4 +146,62 @@ RSpec.describe 'Users API', type: :request do
       expect(parsed_response).to eq(user.slice(:id, :email, :hat, :username, :created_at, :updated_at).as_json)
     end
   end
+
+  describe 'recovery_token' do
+    let(:user) { FactoryBot.create(:user) }
+
+    subject { post recovery_token_api_v1_users_path, params: { email: user.email } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'adds a recovery token to the User model' do
+      user.update!(recovery_token: nil)
+
+      subject
+
+      expect(user.reload.recovery_token).not_to be_nil
+    end
+
+    it 'sends a recovery_token email to the User' do
+      mail = double(:mail)
+      expect(PasswordRecoveryMailer).to receive(:with).with(user: user).and_return(mail)
+      expect(mail).to receive(:recovery_token).and_return(mail)
+      expect(mail).to receive(:deliver_later)
+
+      subject
+    end
+  end
+
+  describe 'recovery_token' do
+    let(:user) { FactoryBot.create(:user) }
+
+    subject { post recovery_token_api_v1_users_path, params: { email: user.email } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'adds a recovery token to the User model' do
+      user.update!(recovery_token: nil)
+
+      subject
+
+      expect(user.reload.recovery_token).not_to be_nil
+    end
+
+    it 'sends a recovery_token email to the User' do
+      mail = double(:mail)
+      expect(PasswordRecoveryMailer).to receive(:with).with(user: user).and_return(mail)
+      expect(mail).to receive(:recovery_token).and_return(mail)
+      expect(mail).to receive(:deliver_later)
+
+      subject
+    end
+  end
 end
