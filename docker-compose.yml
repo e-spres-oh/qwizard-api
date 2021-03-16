@@ -1,0 +1,37 @@
+version: '3.2'
+
+services:
+  db:
+    image: 'postgres:12-alpine'
+    logging:
+      driver: "none"
+    volumes:
+      - 'postgres:/var/lib/postgresql/data'
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+  web:
+    logging:
+      driver: "none"
+    build: __frontend__
+    ports:
+      - '3000:3000'
+  api:
+    depends_on:
+      - 'db'
+      - 'web'
+    build: .
+    volumes:
+      - .:/project
+      - type: tmpfs
+        target: /project/tmp/pids/
+    ports:
+      - '3001:3001'
+    environment:
+      - DATABASE_HOST=db
+      - PORT=3001
+      - EDITOR=vi
+
+volumes:
+  postgres:
