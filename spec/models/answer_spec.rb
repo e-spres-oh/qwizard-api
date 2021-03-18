@@ -4,15 +4,13 @@ require 'rails_helper'
 
 RSpec.describe Answer, type: :model do
   it 'is valid if quiz, title, time_limit and points present' do
-    quiz = FactoryBot.create(:quiz)
-    question = Question.create(title: 'question', time_limit: 30, points: 100, order: 1, answer_type: 'single', quiz: quiz)
+    question = FactoryBot.create(:question)
     answer = described_class.new(title: 'test', question: question)
     expect(answer).to be_valid
   end
 
   it 'is invalid if title is missing' do
-    quiz = FactoryBot.create(:quiz)
-    question = Question.create(title: 'question', time_limit: 30, points: 100, order: 1, answer_type: 'single', quiz: quiz)
+    question = FactoryBot.create(:question)
     answer = described_class.new(question: question)
     expect(answer).not_to be_valid
   end
