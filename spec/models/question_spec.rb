@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Question, type: :model do
-  let(:quiz) { Quiz.create(title: 'quiz') }
+  let(:quiz) { FactoryBot.create(:quiz) }
   it 'is valid if quiz, title, time_limit and points present' do
     question = described_class.new(title: 'test', time_limit: 30, points: 100, order: 1, answer_type: 'single', quiz: quiz)
     expect(question).to be_valid

@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe PlayerAnswer, type: :model do
   it 'is valid if player and answer are present' do
-    quiz = Quiz.create(title: 'quiz')
+    quiz = FactoryBot.create(:quiz)
     lobby = Lobby.create(code: 'lobby', status: 'pending', quiz: quiz)
     player = Player.create(name: 'player', hat: 'star', lobby: lobby)
     question = Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz)
@@ -15,7 +15,7 @@ RSpec.describe PlayerAnswer, type: :model do
   end
 
   it 'is invalid if player is missing' do
-    quiz = Quiz.create(title: 'quiz')
+    quiz = FactoryBot.create(:quiz)
     question = Question.create(title: 'question', time_limit: 30, points: 100, answer_type: 'single', order: 1, quiz: quiz)
     answer = Answer.create(title: 'answer', question: question)
 
@@ -24,7 +24,7 @@ RSpec.describe PlayerAnswer, type: :model do
   end
 
   it 'is invalid if answer is missing' do
-    quiz = Quiz.create(title: 'quiz')
+    quiz = FactoryBot.create(:quiz)
     lobby = Lobby.create(code: 'lobby', status: 'pending', quiz: quiz)
     player = Player.create(name: 'player', hat: 'star', lobby: lobby)
 
