@@ -6,6 +6,7 @@ class Lobby < ApplicationRecord
   validates :current_question_index, presence: true
 
   belongs_to :quiz
+  has_many :players, dependent: :destroy
 
   enum status: [:pending, :in_progress, :finished]
 end
