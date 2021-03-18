@@ -1,5 +1,5 @@
 FactoryBot.define do
   factory :quiz do
-    title { 'quiz_title' }
+    title { Faker::Educator.subject }
   end
 end

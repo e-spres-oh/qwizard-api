@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :question do
     quiz
-    title { 'question?' }
-    time_limit { 30 }
-    points { 100 }
+    title { Faker::Lorem.question }
+    time_limit { Faker::Number.between(from: 1, to: 60) }
+    points { Faker::Number.between(from: 0, to: 200) }
     order { quiz.questions.count + 1 }
     answer_type { 'single' }
   end
