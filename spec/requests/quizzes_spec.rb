@@ -3,6 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe 'Quizzes API', type: :request do
+  let(:user) { FactoryBot.create(:user) }
+  before { post api_v1_login_path, params: { user: { username: user.username, password: user.password } } }
+
   describe 'index' do
     subject { get api_v1_quizzes_path }
 
@@ -13,8 +16,8 @@ RSpec.describe 'Quizzes API', type: :request do
     end
 
     it 'responds with the current quizzes' do
-      foo_quiz = FactoryBot.create(:quiz)
-      bar_quiz = FactoryBot.create(:quiz)
+      foo_quiz = FactoryBot.create(:quiz, user: user)
+      bar_quiz = FactoryBot.create(:quiz, user: user)
 
       subject
 
@@ -70,7 +73,7 @@ RSpec.describe 'Quizzes API', type: :request do
   end
 
   describe 'show' do
-    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
 
     subject { get api_v1_quiz_path(id: quiz.id) }
 
@@ -89,7 +92,7 @@ RSpec.describe 'Quizzes API', type: :request do
   end
 
   describe 'update' do
-    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
     let(:quiz_params) do
       { title: 'test' }
     end
@@ -116,7 +119,7 @@ RSpec.describe 'Quizzes API', type: :request do
   end
 
   describe 'destroy' do
-    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
 
     subject { delete api_v1_quiz_path(id: quiz.id) }
 
