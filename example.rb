@@ -1,10 +1,23 @@
-puts 'This is the first executed statement'
+# frozen_string_literal: true
 
-# I am a comment
-a = 1 + (2 * 3)
+require_relative 'fizzbuzz'
 
-if a == 6
-  puts 'Will I be printed?!'
-end
+puts :fizzerbuzzer
+fizzerbuzzer = FizzBuzz.new(76)
 
-puts 'The end!'
+fizzerbuzzer.play
+fizzerbuzzer.print_fizz_count
+fizzerbuzzer.print_buzz_count
+
+puts :buzzerfizzer
+buzzerfizzer = FizzBuzz.new(32)
+
+buzzerfizzer.play
+buzzerfizzer.print_fizz_count
+buzzerfizzer.print_buzz_count
+
+FizzBuzz.reset_count
+
+puts :reset
+buzzerfizzer.print_fizz_count
+buzzerfizzer.print_buzz_count
