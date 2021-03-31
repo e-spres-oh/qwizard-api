@@ -10,8 +10,6 @@ class FizzBuzz
   end
 
   def initialize(number)
-    puts self.class.fizz_count
-    puts self.class.buzz_count
     @n = number
   end
 
@@ -21,27 +19,27 @@ class FizzBuzz
   end
 
   def print_fizz_count
-    puts self.class.fizz_count
+    puts FizzBuzz.fizz_count
   end
 
   def print_buzz_count
-    puts self.class.buzz_count
+    puts FizzBuzz.buzz_count
   end
 
   def fizz
     puts :fizz
-    self.class.fizz_count = self.class.fizz_count + 1
+    FizzBuzz.fizz_count += 1
   end
 
   def buzz
     puts :buzz
-    self.class.buzz_count = self.class.buzz_count + 1
+    FizzBuzz.buzz_count += 1
   end
 
   def fizzbuzz
     puts :fizzbuzz
-    self.class.fizz_count = self.class.fizz_count + 1
-    self.class.buzz_count = self.class.buzz_count + 1
+    FizzBuzz.fizz_count += 1
+    FizzBuzz.buzz_count += 1
   end
 
   def determine_fuzziness(number)
