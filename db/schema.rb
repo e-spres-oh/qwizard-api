@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_06_195525) do
+ActiveRecord::Schema.define(version: 2021_04_06_201541) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -34,6 +34,24 @@ ActiveRecord::Schema.define(version: 2021_04_06_195525) do
     t.index ["quiz_id"], name: "index_lobbies_on_quiz_id"
   end
 
+  create_table "player_answers", force: :cascade do |t|
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.bigint "players_id"
+    t.bigint "answers_id"
+    t.index ["answers_id"], name: "index_player_answers_on_answers_id"
+    t.index ["players_id"], name: "index_player_answers_on_players_id"
+  end
+
+  create_table "players", force: :cascade do |t|
+    t.integer "hat"
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.bigint "lobbies_id"
+    t.index ["lobbies_id"], name: "index_players_on_lobbies_id"
+  end
+
   create_table "questions", force: :cascade do |t|
     t.string "title"
     t.integer "answer_type"
@@ -54,5 +72,8 @@ ActiveRecord::Schema.define(version: 2021_04_06_195525) do
 
   add_foreign_key "answers", "questions", column: "questions_id"
   add_foreign_key "lobbies", "quizzes"
+  add_foreign_key "player_answers", "answers", column: "answers_id"
+  add_foreign_key "player_answers", "players", column: "players_id"
+  add_foreign_key "players", "lobbies", column: "lobbies_id"
   add_foreign_key "questions", "quizzes"
 end
