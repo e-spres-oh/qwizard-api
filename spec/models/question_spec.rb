@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Question, type: :model do
-  it 'is valid if all attributes are present' do
+  it 'is valid if all attributes are present and belongs to a quiz' do
     quiz = Quiz.create(title: 'test')
     question = described_class.new(
       answer_type: '1',
@@ -11,7 +11,7 @@ RSpec.describe Question, type: :model do
       points: '1',
       time_limit: '1',
       title: 'test',
-      quiz_id: '1'
+      quiz: quiz
       )
     expect(question).to be_valid
   end
@@ -23,7 +23,7 @@ RSpec.describe Question, type: :model do
       points: '1',
       time_limit: '1',
       title: 'test',
-      quiz_id: '1'
+      quiz: quiz
       )
     expect(question).not_to be_valid
   end
@@ -35,7 +35,7 @@ RSpec.describe Question, type: :model do
       points: '1',
       time_limit: '1',
       title: 'test',
-      quiz_id: '1'
+      quiz: quiz
       )
     expect(question).not_to be_valid
   end
@@ -47,7 +47,7 @@ RSpec.describe Question, type: :model do
       order: '1',
       time_limit: '1',
       title: 'test',
-      quiz_id: '1'
+      quiz: quiz
       )
     expect(question).not_to be_valid
   end
@@ -59,7 +59,7 @@ RSpec.describe Question, type: :model do
       order: '1',
       points: '1',
       title: 'test',
-      quiz_id: '1'
+      quiz: quiz
       )
     expect(question).not_to be_valid
   end
@@ -71,12 +71,12 @@ RSpec.describe Question, type: :model do
       order: '1',
       points: '1',
       time_limit: '1',
-      quiz_id: '1'
+      quiz: quiz
       )
     expect(question).not_to be_valid
   end
 
-  it 'is not valid if quiz_id is not present' do
+  it 'is not valid if quiz is not present' do
     quiz = Quiz.create(title: 'test')
     question = described_class.new(
       answer_type: '1',
