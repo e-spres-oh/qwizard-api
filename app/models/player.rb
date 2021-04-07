@@ -3,6 +3,6 @@
 class Player < ApplicationRecord
     validates :hat, :name, presence: true
 
-    belongs_to: lobbies
-    has_many: player_answers
+    belongs_to :lobby
+    has_many :player_answers
 end

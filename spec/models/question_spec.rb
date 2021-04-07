@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe Question, type: :model do
   it 'is valid if title, answer type, order, points and time limit present' do
-    quiz = Quiz.new(title: 'Test')
+    quiz = Quiz.create(title: 'Test')
     question = described_class.new(title: 'test', answer_type: 2, order: 2, points: 2, time_limit: 2, quiz: quiz)
     expect(question).to be_valid
   end

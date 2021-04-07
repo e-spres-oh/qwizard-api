@@ -20,8 +20,8 @@ ActiveRecord::Schema.define(version: 2021_04_06_201541) do
     t.boolean "is_correct"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "questions_id"
-    t.index ["questions_id"], name: "index_answers_on_questions_id"
+    t.bigint "question_id"
+    t.index ["question_id"], name: "index_answers_on_question_id"
   end
 
   create_table "lobbies", force: :cascade do |t|
@@ -37,10 +37,10 @@ ActiveRecord::Schema.define(version: 2021_04_06_201541) do
   create_table "player_answers", force: :cascade do |t|
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "players_id"
-    t.bigint "answers_id"
-    t.index ["answers_id"], name: "index_player_answers_on_answers_id"
-    t.index ["players_id"], name: "index_player_answers_on_players_id"
+    t.bigint "player_id"
+    t.bigint "answer_id"
+    t.index ["answer_id"], name: "index_player_answers_on_answer_id"
+    t.index ["player_id"], name: "index_player_answers_on_player_id"
   end
 
   create_table "players", force: :cascade do |t|
@@ -48,8 +48,8 @@ ActiveRecord::Schema.define(version: 2021_04_06_201541) do
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "lobbies_id"
-    t.index ["lobbies_id"], name: "index_players_on_lobbies_id"
+    t.bigint "lobby_id"
+    t.index ["lobby_id"], name: "index_players_on_lobby_id"
   end
 
   create_table "questions", force: :cascade do |t|
@@ -70,10 +70,10 @@ ActiveRecord::Schema.define(version: 2021_04_06_201541) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  add_foreign_key "answers", "questions", column: "questions_id"
+  add_foreign_key "answers", "questions"
   add_foreign_key "lobbies", "quizzes"
-  add_foreign_key "player_answers", "answers", column: "answers_id"
-  add_foreign_key "player_answers", "players", column: "players_id"
-  add_foreign_key "players", "lobbies", column: "lobbies_id"
+  add_foreign_key "player_answers", "answers"
+  add_foreign_key "player_answers", "players"
+  add_foreign_key "players", "lobbies"
   add_foreign_key "questions", "quizzes"
 end

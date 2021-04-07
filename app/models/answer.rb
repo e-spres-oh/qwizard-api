@@ -3,6 +3,6 @@
 class Answer < ApplicationRecord
     validates :title, :is_correct, presence: true
 
-    belongs_to: questions
-    has_many: player_answers
+    belongs_to :question
+    has_many :player_answers
 end
