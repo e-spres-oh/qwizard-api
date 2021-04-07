@@ -2,7 +2,7 @@
 
 class Question < ApplicationRecord
   belongs_to :quiz
-  has_many :answers, inverse_of: :order
+  has_many :answers, inverse_of: :question
   validates :quiz, presence: true
   validates :answers, presence: true
   validates :title, presence: true
