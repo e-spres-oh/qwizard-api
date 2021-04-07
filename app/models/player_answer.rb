@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
 class PlayerAnswer < ApplicationRecord
-    belongs_to: players
-    belongs_to: answers
+    belongs_to :player
+    belongs_to :answer
 end
