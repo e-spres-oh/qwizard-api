@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Answer, type: :model do
+RSpec.describe PlayerAnswer, type: :model do
   it 'is valid if binded to player and answer' do
     quiz = Quiz.create(title: 'Test')
     question = Question.create(title: 'test', answer_type: 2, order: 2, points: 2, time_limit: 2, quiz: quiz)
