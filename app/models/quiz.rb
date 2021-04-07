@@ -3,5 +3,6 @@
 class Quiz < ApplicationRecord
   validates :title, presence: true
 
-  has_may :questions, dependent: :destroy
+  has_many :questions, dependent: :destroy
+  has_many :lobbies, dependent: :destroy
 end
