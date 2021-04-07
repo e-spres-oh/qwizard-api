@@ -10,10 +10,59 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_02_16_210730) do
+ActiveRecord::Schema.define(version: 2021_04_07_123553) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "answers", force: :cascade do |t|
+    t.boolean "is_correct"
+    t.string "title"
+    t.bigint "question_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["question_id"], name: "index_answers_on_question_id"
+  end
+
+  create_table "lobbies", force: :cascade do |t|
+    t.string "code"
+    t.integer "current_question_index"
+    t.integer "status"
+    t.bigint "quiz_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["quiz_id"], name: "index_lobbies_on_quiz_id"
+  end
+
+  create_table "player_answers", force: :cascade do |t|
+    t.bigint "player_id", null: false
+    t.bigint "answer_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["answer_id"], name: "index_player_answers_on_answer_id"
+    t.index ["player_id"], name: "index_player_answers_on_player_id"
+  end
+
+  create_table "players", force: :cascade do |t|
+    t.integer "hat"
+    t.string "name"
+    t.bigint "lobby_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["lobby_id"], name: "index_players_on_lobby_id"
+  end
+
+  create_table "questions", force: :cascade do |t|
+    t.string "title"
+    t.float "points"
+    t.float "order"
+    t.float "time_limit"
+    t.integer "answer_type"
+    t.bigint "quiz_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["quiz_id"], name: "index_questions_on_quiz_id"
+  end
 
   create_table "quizzes", force: :cascade do |t|
     t.string "title"
@@ -21,4 +70,8 @@ ActiveRecord::Schema.define(version: 2021_02_16_210730) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  add_foreign_key "answers", "questions"
+  add_foreign_key "player_answers", "answers"
+  add_foreign_key "player_answers", "players"
+  add_foreign_key "players", "lobbies"
 end

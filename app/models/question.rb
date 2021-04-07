@@ -6,8 +6,8 @@ class Question < ApplicationRecord
   validates :quiz, presence: true
   validates :answers, presence: true
   validates :title, presence: true
-  validates :points, presence: true, numericality: { only_integer: false, greater_than: 0 }
-  validates :order, presence: true, numericality: { only_integer: false, greater_than: 0 }
+  validates :points, presence: true, numericality: { only_integer: false, greater_than_or_equal_to: 0 }
+  validates :order, presence: true, numericality: { only_integer: false, greater_than_or_equal_to: 0 }
   validates :time_limit, presence: true, numericality: { only_integer: false, greater_than: 0 }
   validates :answer_type, presence: true, numericality: { only_integer: true }
 end
