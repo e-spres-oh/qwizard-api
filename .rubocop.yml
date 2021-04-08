@@ -21,6 +21,7 @@ AllCops:
     - 'config.ru'
     - 'Gemfile'
     - 'Rakefile'
+    - 'vendor/bundle/**/*'
 
 Style/Documentation:
   Enabled: false
