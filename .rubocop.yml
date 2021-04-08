@@ -23,3 +23,11 @@ AllCops:
 
 Style/Documentation:
   Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  Exclude:
+    - '**/*.json.jbuilder'
