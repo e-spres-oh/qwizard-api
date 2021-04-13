@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       resources :questions
       resources :answers
       resources :lobbies
+      resources :players
     end
   end
 end
