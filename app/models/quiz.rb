@@ -6,4 +6,7 @@ class Quiz < ApplicationRecord
   validates :questions, presence: true, allow_blank: true
   validates :lobby, presence: true, allow_nil: true
   validates :title, presence: true
+
+  has_many :questions, dependent: :destroy
+  has_many :lobbies, dependent: :destroy
 end
