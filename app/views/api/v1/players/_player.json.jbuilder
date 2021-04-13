@@ -1,1 +1,1 @@
-json.extract! player, :id, :name, :hat, :created_at, :updated_at, :lobby
+json.extract! player, :id, :name, :hat, :created_at, :updated_at, :lobby_id
