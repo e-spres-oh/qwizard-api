@@ -1,4 +1,4 @@
-#frozen_string_literal: true
+# frozen_string_literal: true
 
 module Api
   module V1
@@ -22,7 +22,7 @@ module Api
         render :show
       end
 
-      def update 
+      def update
         @lobby = Lobby.find_by!(id: params[:id])
         if @lobby.update(lobby_params)
           render :show
@@ -37,12 +37,11 @@ module Api
         render :show
       end
 
-      private 
+      private
+
       def lobby_params
         params.require(:lobby).permit(:code, :current_question_index, :status, :quiz_id)
       end
-      
     end
   end
 end
-  

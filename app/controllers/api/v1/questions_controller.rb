@@ -1,4 +1,4 @@
-#frozen_string_literal: true
+# frozen_string_literal: true
 
 module Api
   module V1
@@ -22,7 +22,7 @@ module Api
         render :show
       end
 
-      def update 
+      def update
         @question = Question.find_by!(id: params[:id])
         if @question.update(question_params)
           render :show
@@ -37,7 +37,8 @@ module Api
         render :show
       end
 
-      private 
+      private
+
       def question_params
         params.require(:question).permit(:title, :time_limit, :points, :answer_type, :order, :quiz_id)
       end

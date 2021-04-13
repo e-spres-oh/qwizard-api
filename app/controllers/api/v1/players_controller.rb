@@ -1,4 +1,4 @@
-#frozen_string_literal: true
+# frozen_string_literal: true
 
 module Api
   module V1
@@ -22,7 +22,7 @@ module Api
         render :show
       end
 
-      def update 
+      def update
         @player = Player.find_by!(id: params[:id])
         if @player.update(player_params)
           render :show
@@ -37,12 +37,11 @@ module Api
         render :show
       end
 
-      private 
+      private
+
       def player_params
         params.require(:player).permit(:hat, :name, :lobby_id)
       end
-      
     end
   end
 end
-    
