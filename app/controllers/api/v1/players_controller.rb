@@ -43,7 +43,7 @@ module Api
       private
 
       def player_params
-        params.require(:player).permit(:title)
+        params.require(:player).permit(:hat, :name)
       end
     end
   end
