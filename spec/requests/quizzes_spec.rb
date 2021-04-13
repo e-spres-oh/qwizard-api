@@ -13,6 +13,9 @@ RSpec.describe 'Quizzes API', type: :request do
     end
 
     it 'responds with the current quizzes' do
+      FactoryBot.create(:quiz)
+      FactoryBot.create(:quiz)
+      
       subject
 
       parsed_response = JSON.parse(response.body)

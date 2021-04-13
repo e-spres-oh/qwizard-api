@@ -13,6 +13,9 @@ RSpec.describe 'Lobbies API', type: :request do
     end
 
     it 'responds with the current lobbies' do
+      FactoryBot.create(:lobby)
+      FactoryBot.create(:lobby)
+      
       subject
 
       parsed_response = JSON.parse(response.body)
