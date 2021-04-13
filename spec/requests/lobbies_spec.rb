@@ -13,13 +13,10 @@ RSpec.describe 'Lobbies API', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      foo_lobby = Lobby.create(code: 'foo', status: 'pending', current_question_index: 1, quiz: Quiz.first)
-      bar_lobby = Lobby.create(code: 'bar', status: 'pending', current_question_index: 1, quiz: Quiz.first)
-
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq([foo_lobby, bar_lobby].as_json)
+      expect(parsed_response).to eq(Lobby.all.as_json)
     end
   end
 

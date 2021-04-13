@@ -13,13 +13,10 @@ RSpec.describe 'Quizzes API', type: :request do
     end
 
     it 'responds with the current quizzes' do
-      foo_quiz = Quiz.create(title: 'foo')
-      bar_quiz = Quiz.create(title: 'bar')
-
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq([foo_quiz, bar_quiz].as_json)
+      expect(parsed_response).to eq(Quiz.all.as_json)
     end
   end
 
