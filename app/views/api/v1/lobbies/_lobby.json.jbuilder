@@ -1,1 +1,1 @@
-json.extract! lobby, :id, :code, :status, :current_question_index, :created_at, :updated_at, :quiz
+json.extract! lobby, :id, :code, :status, :current_question_index, :created_at, :updated_at, :quiz_id
