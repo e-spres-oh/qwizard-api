@@ -71,9 +71,7 @@ RSpec.describe 'Answers API', type: :request do
   end
 
   describe 'show' do
-    let(:answer) {
-      Answer.create(title: 'Answer title', is_correct: true, question: Question.first)
-    }
+    let(:answer) { FactoryBot.create(:answer) }
 
     subject { get api_v1_answer_path(id: answer.id) }
 
@@ -92,9 +90,7 @@ RSpec.describe 'Answers API', type: :request do
   end
 
   describe 'update' do
-    let(:answer) {
-      Answer.create(title: 'Answer title', is_correct: true, question: Question.first)
-    }
+    let(:answer) { FactoryBot.create(:answer) }
     let(:answer_params) do
       { title: 'Answer title', is_correct: true, question_id: FactoryBot.create(:question).id }
     end
@@ -121,9 +117,7 @@ RSpec.describe 'Answers API', type: :request do
   end
 
   describe 'destroy' do
-    let(:answer) {
-      Answer.create(title: 'Answer title', is_correct: true, question: Question.first)
-    }
+    let(:answer) { FactoryBot.create(:answer) }
 
     subject { delete api_v1_answer_path(id: answer.id) }
 

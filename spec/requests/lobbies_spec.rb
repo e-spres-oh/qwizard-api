@@ -25,7 +25,7 @@ RSpec.describe 'Lobbies API', type: :request do
 
   describe 'create' do
     let(:lobby_params) do
-      { code: 'lobby create', status: 'pending', current_question_index: 1, quiz_id: 1 }
+      { code: 'lobby create', status: 'pending', current_question_index: 1, quiz_id: FactoryBot.create(:quiz).id }
     end
 
     subject { post api_v1_lobbies_path, params: { lobby: lobby_params } }
@@ -72,7 +72,7 @@ RSpec.describe 'Lobbies API', type: :request do
   end
 
   describe 'show' do
-    let(:lobby) { Lobby.create(code: 'foo', status: 'pending', current_question_index: 1, quiz: Quiz.first) }
+    let(:lobby) { FactoryBot.create(:lobby) }
 
     subject { get api_v1_lobby_path(id: lobby.id) }
 
@@ -91,9 +91,9 @@ RSpec.describe 'Lobbies API', type: :request do
   end
 
   describe 'update' do
-    let(:lobby) { Lobby.create(code: 'foo', status: 'pending', current_question_index: 1, quiz: Quiz.first) }
+    let(:lobby) { FactoryBot.create(:lobby) }
     let(:lobby_params) do
-      { code: 'lobby update', status: 'pending', current_question_index: 1, quiz_id: 1 }
+      { code: 'lobby update', status: 'pending', current_question_index: 1, quiz_id: FactoryBot.create(:quiz).id }
     end
     subject { put api_v1_lobby_path(id: lobby.id), params: { lobby: lobby_params } }
 
@@ -118,7 +118,7 @@ RSpec.describe 'Lobbies API', type: :request do
   end
 
   describe 'destroy' do
-    let(:lobby) { Lobby.create(code: 'foo', status: 'pending', current_question_index: 1, quiz: Quiz.first) }
+    let(:lobby) { FactoryBot.create(:lobby) }
 
     subject { delete api_v1_lobby_path(id: lobby.id) }
 

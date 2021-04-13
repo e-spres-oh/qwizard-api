@@ -15,7 +15,7 @@ RSpec.describe 'Questions API', type: :request do
     it 'responds with the current questions' do
       FactoryBot.create(:question)
       FactoryBot.create(:question)
-      
+
       subject
 
       parsed_response = JSON.parse(response.body)
@@ -25,7 +25,7 @@ RSpec.describe 'Questions API', type: :request do
 
   describe 'create' do
     let(:question_params) do
-      { title: 'foo', order: 1, time_limit: 30, points: 1, answer_type: 'single', quiz_id: 1 }
+      { title: 'foo', order: 1, time_limit: 30, points: 1, answer_type: 'single', quiz_id: FactoryBot.create(:quiz).id }
     end
 
     subject { post api_v1_questions_path, params: { question: question_params } }
@@ -75,9 +75,7 @@ RSpec.describe 'Questions API', type: :request do
   end
 
   describe 'show' do
-    let(:question) {
-      Question.create(title: 'foo', order: 1, time_limit: 30, points: 1, answer_type: 'single', quiz: Quiz.first)
-    }
+    let(:question) { FactoryBot.create(:question) }
 
     subject { get api_v1_question_path(id: question.id) }
 
@@ -96,11 +94,9 @@ RSpec.describe 'Questions API', type: :request do
   end
 
   describe 'update' do
-    let(:question) {
-      Question.create(title: 'foo', order: 1, time_limit: 30, points: 1, answer_type: 'single', quiz: Quiz.first)
-    }
+    let(:question) { FactoryBot.create(:question) }
     let(:question_params) do
-      { title: 'new', order: 3, time_limit: 50, points: 18, answer_type: 'single', quiz_id: 1 }
+      { title: 'new', order: 3, time_limit: 50, points: 18, answer_type: 'single', quiz_id: FactoryBot.create(:quiz).id }
     end
     subject { put api_v1_question_path(id: question.id), params: { question: question_params } }
 
@@ -125,9 +121,7 @@ RSpec.describe 'Questions API', type: :request do
   end
 
   describe 'destroy' do
-    let(:question) {
-      Question.create(title: 'foo', order: 1, time_limit: 30, points: 1, answer_type: 'single', quiz: Quiz.first)
-    }
+    let(:question) { FactoryBot.create(:question) }
 
     subject { delete api_v1_question_path(id: question.id) }
 

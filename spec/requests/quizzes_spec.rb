@@ -70,7 +70,7 @@ RSpec.describe 'Quizzes API', type: :request do
   end
 
   describe 'show' do
-    let(:quiz) { Quiz.create(title: 'foo') }
+    let(:quiz) { FactoryBot.create(:quiz) }
 
     subject { get api_v1_quiz_path(id: quiz.id) }
 
@@ -89,7 +89,7 @@ RSpec.describe 'Quizzes API', type: :request do
   end
 
   describe 'update' do
-    let(:quiz) { Quiz.create(title: 'foo') }
+    let(:quiz) { FactoryBot.create(:quiz) }
     let(:quiz_params) do
       { title: 'test' }
     end
@@ -116,7 +116,7 @@ RSpec.describe 'Quizzes API', type: :request do
   end
 
   describe 'destroy' do
-    let(:quiz) { Quiz.create(title: 'foo') }
+    let(:quiz) { FactoryBot.create(:quiz) }
 
     subject { delete api_v1_quiz_path(id: quiz.id) }
 
