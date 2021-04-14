@@ -1,0 +1,10 @@
+json.extract! question,
+              :id,
+              :title,
+              :order,
+              :points,
+              :answer_type,
+              :time_limit,
+              :quiz_id,
+              :created_at,
+              :updated_at
