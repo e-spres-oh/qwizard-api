@@ -3,6 +3,6 @@ json.extract! lobby,
               :code,
               :status,
               :current_question_index,
-              :quiz,
+              :quiz_id,
               :created_at,
               :updated_at

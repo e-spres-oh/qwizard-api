@@ -2,6 +2,6 @@ json.extract! player,
               :id,
               :hat,
               :name,
-              :lobby,
+              :lobby_id,
               :created_at,
               :updated_at

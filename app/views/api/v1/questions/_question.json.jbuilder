@@ -5,6 +5,6 @@ json.extract! question,
               :points,
               :answer_type,
               :time_limit,
-              :quiz,
+              :quiz_id,
               :created_at,
               :updated_at
