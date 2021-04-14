@@ -43,7 +43,7 @@ module Api
       private
 
       def lobby_params
-        params.require(:lobby).permit(:code,:status,:current_question_index,:quiz_id)
+        params.require(:lobby).permit(:code, :status, :current_question_index, :quiz_id)
       end
     end
   end

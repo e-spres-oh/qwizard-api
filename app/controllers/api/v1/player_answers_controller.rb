@@ -43,7 +43,7 @@ module Api
       private
 
       def player_answer_params
-        params.require(:player_answer).permit(:title,:is_correct,:question_id)
+        params.require(:player_answer).permit(:title, :is_correct, :question_id)
       end
     end
   end

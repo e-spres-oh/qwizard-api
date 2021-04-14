@@ -43,7 +43,7 @@ module Api
       private
 
       def player_params
-        params.require(:player).permit(:hat,:name,:lobby_id)
+        params.require(:player).permit(:hat, :name, :lobby_id)
       end
     end
   end

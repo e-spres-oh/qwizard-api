@@ -43,7 +43,7 @@ module Api
       private
 
       def question_params
-        params.require(:question).permit(:title,:time_limit,:points,:answer_type,:order,:quiz_id)
+        params.require(:question).permit(:title, :time_limit, :points, :answer_type, :order, :quiz_id)
       end
     end
   end
