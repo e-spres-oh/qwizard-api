@@ -2,14 +2,21 @@
 
 module Api
   module V1
-    class PlayersController < ApplicationController
+    class PlayersController < AuthenticatedController
+      before_action :require_authentication, except: [:index, :show]
+      before_action :set_player, only: [:show, :update, :destroy]
+      before_action :require_authorisation, only: [:update, :destroy]
+      before_action :set_lobby, only: [:index, :create]
+
       def index
-        @players = Player.all
+        @players = @lobby.players.all
         render :index
       end
 
       def create
-        @player = Player.new(player_params)
+        return head :unauthorised unless @lobby.quiz.user == current_user
+
+        @player = Player.new(player_params.merge(lobby: @lobby))
 
         if @player.save
           render :show, status: :created
@@ -19,13 +26,10 @@ module Api
       end
 
       def show
-        @player = Player.find(params[:id])
         render :show
       end
 
       def update
-        @player = Player.find(params[:id])
-
         if @player.update(player_params)
           render :show
         else
@@ -34,7 +38,6 @@ module Api
       end
 
       def destroy
-        @player = Player.find(params[:id])
         @player.destroy
 
         render :show
@@ -43,7 +46,19 @@ module Api
       private
 
       def player_params
-        params.require(:player).permit(:name, :hat, :lobby_id)
+        params.require(:player).permit(:name, :hat)
+      end
+
+      def set_player
+        @player = Player.find(params[:id])
+      end
+
+      def require_authorisation
+        head :unauthorised if @player.lobby.quiz.user != current_user
+      end
+
+      def set_lobby
+        @lobby = Lobby.find(params[:lobby_id])
       end
     end
   end
