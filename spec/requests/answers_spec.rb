@@ -3,8 +3,14 @@
 require 'rails_helper'
 
 RSpec.describe 'AnswersAPI', type: :request do
+  let(:question) { FactoryBot.create(:question) }
+  let(:username) { question.quiz.user.username }
+  let(:password) { question.quiz.user.password }
+
+  before { post api_v1_login_path, params: { user: { username: username, password: password } } }
+
   describe 'index' do
-    subject { get api_v1_answers_path }
+    subject { get api_v1_question_answers_path(question_id: question.id) }
 
     it 'responds with successful HTTP status' do
       subject
@@ -13,8 +19,8 @@ RSpec.describe 'AnswersAPI', type: :request do
     end
 
     it 'responds with the current answers' do
-      foo_answer = FactoryBot.create(:answer)
-      bar_answer = FactoryBot.create(:answer)
+      foo_answer = FactoryBot.create(:answer, question: question)
+      bar_answer = FactoryBot.create(:answer, question: question)
 
       subject
 
@@ -24,12 +30,11 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'create' do
-    let(:question) { FactoryBot.create(:question) }
     let(:answer_params) do
-      { title: 'foo', is_correct: true, question_id: question.id }
+      { title: 'foo', is_correct: true }
     end
 
-    subject { post api_v1_answers_path, params: { answer: answer_params } }
+    subject { post api_v1_question_answers_path(question_id: question.id), params: { answer: answer_params } }
 
     it 'responds with created HTTP status' do
       subject
@@ -44,7 +49,7 @@ RSpec.describe 'AnswersAPI', type: :request do
 
       expect(answer.title).to eq(answer_params[:title])
       expect(answer.is_correct).to eq(answer_params[:is_correct])
-      expect(answer.question).to eq(Question.find(answer_params[:question_id]))
+      expect(answer.question).to eq(question)
     end
 
     it 'responds with the created Answer model' do
@@ -70,17 +75,16 @@ RSpec.describe 'AnswersAPI', type: :request do
 
         parsed_response = JSON.parse(response.body, symbolize_names: true)
         expect(parsed_response).to eq(
-          errors: [
-              { attribute: 'title', error: 'blank', message: 'can\'t be blank' },
-              { attribute: 'question', error: 'blank', message: 'must exist' }
-            ]
-          )
+                                     errors: [
+                                       { attribute: 'title', error: 'blank', message: 'can\'t be blank' }
+                                     ]
+                                   )
       end
     end
   end
 
   describe 'show' do
-    let(:answer) { FactoryBot.create(:answer) }
+    let(:answer) { FactoryBot.create(:answer, question: question) }
 
     subject { get api_v1_answer_path(id: answer.id) }
 
@@ -99,7 +103,7 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:answer) { FactoryBot.create(:answer) }
+    let(:answer) { FactoryBot.create(:answer, question: question) }
     let(:answer_params) do
       { is_correct: false }
     end
@@ -126,7 +130,7 @@ RSpec.describe 'AnswersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:answer) { FactoryBot.create(:answer) }
+    let(:answer) { FactoryBot.create(:answer, question: question) }
 
     subject { delete api_v1_answer_path(id: answer.id) }
 
