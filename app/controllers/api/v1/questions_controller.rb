@@ -4,6 +4,7 @@ module Api
   module V1
     class QuestionsController < AuthenticatedController
       before_action :require_authentication, except: [:index, :show]
+      before_action :set_question, only: [:show, :update, :destroy]
       before_action :require_authorisation, only: [:update, :destroy]
       before_action :set_quiz, only: [:index, :create]
 
@@ -26,13 +27,10 @@ module Api
       end
 
       def show
-        @question = Question.find(params[:id])
         render :show
       end
 
       def update
-        @question = Question.find(params[:id])
-
         if @question.update(question_params)
           render :show
         else
@@ -41,18 +39,19 @@ module Api
       end
 
       def destroy
-        @question = Question.find(params[:id])
         @question.destroy
 
         render :show
       end
 
       private
+      
+      def set_question
+        @question = Question.find(params[:id])
+      end
 
       def require_authorisation
-        question = Question.find(params[:id])
-
-        head :unauthorized if question.quiz.user != current_user
+        head :unauthorized if @question.quiz.user != current_user
       end
 
       def set_quiz

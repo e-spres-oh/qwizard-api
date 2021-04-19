@@ -3,8 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe 'LobbiesAPI', type: :request do
-  let(:user) { FactoryBot.create(:user) }
-  let(:quiz) { FactoryBot.create(:quiz, user: user) }
+  let(:quiz) { FactoryBot.create(:quiz) }
 
   before { post api_v1_login_path, params: { user: { username: quiz.user.username, password: quiz.user.password } } }
   
@@ -29,7 +28,6 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'create' do
-    let(:quiz) { FactoryBot.create(:quiz) }
     let(:lobby_params) do
       { status: 'pending', current_question_index: 2 }
     end
