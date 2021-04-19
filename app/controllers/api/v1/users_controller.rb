@@ -2,7 +2,11 @@
 
 module Api
   module V1
-    class UsersController < ApplicationController
+    class UsersController < AuthenticatedController
+      before_action :require_authentication, except: [:index, :create, :show]
+      before_action :set_user, only: [:show, :update, :destroy]
+      before_action :require_authorisation, only: [:update, :destroy]
+
       def index
         @users = User.all
         render :index
@@ -19,13 +23,10 @@ module Api
       end
 
       def show
-        @user = User.find(params[:id])
         render :show
       end
 
       def update
-        @user = User.find(params[:id])
-
         if @user.update(user_params)
           render :show
         else
@@ -34,7 +35,6 @@ module Api
       end
 
       def destroy
-        @user = User.find(params[:id])
         @user.destroy
 
         render :show
@@ -44,6 +44,14 @@ module Api
 
       def user_params
         params.require(:user).permit(:username, :email, :password, :hat)
+      end
+
+      def set_user
+        @user = User.find(params[:id])
+      end
+
+      def require_authorisation
+        head :unauthorized if @user != current_user
       end
     end
   end
