@@ -57,7 +57,7 @@ module Api
       def require_authorisation
         head :unauthorized if @lobby.quiz.user != current_user
       end
-      
+
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
       end
