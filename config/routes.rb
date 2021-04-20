@@ -7,10 +7,11 @@ Rails.application.routes.draw do
         resources :questions, shallow: true  do
           resources :answers
         end
-        resources :lobbies, shallow: true
+        resources :lobbies, shallow: true do
+          resources :players
+        end
       end
 
-      resources :players
       resources :player_answers
       resources :users
 
