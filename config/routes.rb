@@ -5,10 +5,10 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :quizzes do
         resources :questions, shallow: true
+        resources :lobbies, shallow: true
       end
 
       resources :answers
-      resources :lobbies
       resources :players
       resources :player_answers
       resources :users
