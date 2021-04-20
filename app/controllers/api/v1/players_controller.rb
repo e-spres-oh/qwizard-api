@@ -6,7 +6,6 @@ module Api
       before_action :require_authentication, except: [:index, :show]
       before_action :require_authorisation, only: [:update, :destroy]
       before_action :set_lobby, only: [:index, :create]
-      
       def index
         @players = @lobby.players.all
         render :index
@@ -14,7 +13,7 @@ module Api
 
       def create
         return head :unauthorized unless @lobby.quiz.user == current_user
-        
+
         @player = Player.new(player_params.merge(lobby: @lobby))
 
         if @player.save
@@ -47,7 +46,7 @@ module Api
       end
 
       private
-      
+
       def require_authorisation
         player = Player.find(params[:id])
 

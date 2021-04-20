@@ -6,7 +6,6 @@ module Api
       before_action :require_authentication, except: [:index, :show]
       before_action :require_authorisation, only: [:update, :destroy]
       before_action :set_question, only: [:index, :create]
-      
       def index
         @answers = @question.answers.all
         render :index
@@ -14,7 +13,7 @@ module Api
 
       def create
         return head :unauthorized unless @question.quiz.user == current_user
-        
+
         @answer = Answer.new(answer_params.merge(question: @question))
 
         if @answer.save
