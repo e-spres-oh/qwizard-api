@@ -4,11 +4,12 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: 'json' } do
     namespace :v1 do
       resources :quizzes do
-        resources :questions, shallow: true
+        resources :questions, shallow: true do
+          resources :answers, shallow: true
+        end
         resources :lobbies, shallow: true
       end
 
-      resources :answers
       resources :players
       resources :player_answers
       resources :users
