@@ -9,7 +9,6 @@ module Api
 
       def index
         @answers = @question.answers.all
-
         render :index
       end
 
@@ -43,7 +42,6 @@ module Api
       def destroy
         @answer = Answer.find(params[:id])
         @answer.destroy
-
         render :show
       end
 
@@ -51,7 +49,6 @@ module Api
 
       def require_authorisation
         answer = Answer.find(params[:id])
-
         head :unauthorized if answer.question.quiz.user != current_user
       end
 

@@ -42,7 +42,6 @@ module Api
       def destroy
         @player_answer = PlayerAnswer.find(params[:id])
         @player_answer.destroy
-
         render :show
       end
 
@@ -50,7 +49,6 @@ module Api
 
       def require_authorisation
         player_answer = PlayerAnswer.find(params[:id])
-
         head :unauthorized if player_answer.player.lobby.quiz.user != current_user
       end
 

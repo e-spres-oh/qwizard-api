@@ -39,7 +39,6 @@ module Api
       def destroy
         @quiz = Quiz.find(params[:id])
         @quiz.destroy
-
         render :show
       end
 

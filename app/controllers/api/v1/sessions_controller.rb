@@ -22,7 +22,6 @@ module Api
 
       def logout
         reset_session
-
         head :ok
       end
 
