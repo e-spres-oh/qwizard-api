@@ -8,11 +8,12 @@ Rails.application.routes.draw do
           resources :answers
         end
         resources :lobbies, shallow: true do
-          resources :players
+          resources :players do
+            resources :player_answers
+          end
         end
       end
 
-      resources :player_answers
       resources :users
 
       post :login, to: 'sessions#login'
