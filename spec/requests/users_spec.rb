@@ -25,7 +25,7 @@ RSpec.describe 'Users API', type: :request do
 
   describe 'create' do
     let(:user_params) do
-      { username: 'name.surename', email:'name@example.com', password: 'qwerty' }
+      { username: 'username', email:'name@example.com', password: 'qwerty' }
     end
 
     subject { post api_v1_users_path, params: { user: user_params } }
@@ -84,7 +84,7 @@ RSpec.describe 'Users API', type: :request do
   describe 'update' do
     let(:user) { FactoryBot.create(:user) }
     let(:user_params) do
-      { username: 'name.surename', email: 'name@example.com', password: 'qwerty' }
+      { username: 'username', email: 'name@example.com', password: 'qwerty' }
     end
     subject { put api_v1_user_path(id: user.id), params: { user: user_params } }
 
@@ -97,7 +97,7 @@ RSpec.describe 'Users API', type: :request do
     it 'updates the User attributes' do
       subject
 
-      expect(user.reload.username).to eq('name.surename')
+      expect(user.reload.username).to eq('username')
     end
 
     it 'responds with the updated User model' do
@@ -124,7 +124,7 @@ RSpec.describe 'Users API', type: :request do
       expect { user.reload }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
-    it 'responds with the destroyed Quiz model' do
+    it 'responds with the destroyed User model' do
       subject
 
       parsed_response = JSON.parse(response.body)

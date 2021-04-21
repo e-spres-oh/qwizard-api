@@ -4,12 +4,12 @@ require 'rails_helper'
 
 RSpec.describe User, type: :model do
   it 'is valid if username, email and password are present' do
-    user =  described_class.new(username: 'name.surename', email: 'name@example.com', password: 'qwerty')
+    user =  described_class.new(username: 'username', email: 'name@example.com', password: 'qwerty')
     expect(user).to be_valid
   end
 
   it 'is valid if it has username, email, password and hat' do
-    user =  described_class.new(username: 'name.surename', email: 'name@example.com', password: 'qwerty', hat: 1)
+    user =  described_class.new(username: 'username', email: 'name@example.com', password: 'qwerty', hat: 1)
     expect(user).to be_valid
   end
 
@@ -19,12 +19,12 @@ RSpec.describe User, type: :model do
   end
 
   it 'is invalid if email missing' do
-    user =  described_class.new(username: 'name.surename', password: 'qwerty')
+    user =  described_class.new(username: 'username', password: 'qwerty')
     expect(user).not_to be_valid
   end
 
   it 'is invalid if password missing' do
-    user =  described_class.new(username: 'name.surename', email: 'name@example.com')
+    user =  described_class.new(username: 'username', email: 'name@example.com')
     expect(user).not_to be_valid
   end
 end
