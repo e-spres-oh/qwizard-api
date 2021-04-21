@@ -56,7 +56,7 @@ module Api
       end
 
       def set_quiz
-        @quiz = Quiz.find(params[:id])
+        @quiz = Quiz.find(params[:quiz_id])
       end
 
       def lobby_params
