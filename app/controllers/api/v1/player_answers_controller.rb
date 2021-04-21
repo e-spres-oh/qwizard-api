@@ -2,14 +2,18 @@
 
 module Api
   module V1
-    class PlayerAnswersController < ApplicationController
+    class PlayerAnswersController < AuthenticatedController
+      before_action :require_authentication, except: [:index, :show]
+      before_action :require_authorisation, only: [:update, :destroy]
+      before_action :set_player, only: [:index, :create]
+
       def index
-        @player_answers = PlayerAnswer.all
+        @player_answers = @player.player_answers.all
         render :index
       end
 
       def create
-        @player_answer = PlayerAnswer.new(player_answer_params)
+        @player_answer = PlayerAnswer.new(player_answer_params.merge(player: @player))
 
         if @player_answer.save
           render :show, status: :created
@@ -42,8 +46,17 @@ module Api
 
       private
 
+      def set_player
+        @player = Player.find_by_id(params[:player_id])
+      end
+
       def player_answer_params
-        params.require(:player_answer).permit(:player_id, :answer_id)
+        params.require(:player_answer).permit(:answer_id)
+      end
+
+      def require_authorisation
+        @player_answer = PlayerAnswer.find(params[:id])
+        head :forbidden if @player_answer.player.lobby.quiz.user != current_user
       end
     end
   end
