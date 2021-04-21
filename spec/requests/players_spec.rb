@@ -3,8 +3,14 @@
 require 'rails_helper'
 
 RSpec.describe 'PlayersAPI', type: :request do
+  let(:user) { FactoryBot.create(:user) }
+  let(:quiz) { FactoryBot.create(:quiz, user: user) }
+  let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+
+  before { post api_v1_login_path, params: { user: { username: quiz.user.username, password: quiz.user.password } } }
+
   describe 'index' do
-    subject { get api_v1_players_path }
+    subject { get api_v1_lobby_players_path(lobby_id: lobby.id) }
 
     it 'responds with successful HTTP status' do
       subject
@@ -13,8 +19,8 @@ RSpec.describe 'PlayersAPI', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      foo_player = FactoryBot.create(:player)
-      bar_player = FactoryBot.create(:player)
+      foo_player = FactoryBot.create(:player, lobby: lobby)
+      bar_player = FactoryBot.create(:player, lobby: lobby)
 
       subject
 
@@ -24,12 +30,11 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'create' do
-    let(:lobby) { FactoryBot.create(:lobby) }
     let(:player_params) do
       { name: 'foo', hat: 'star', lobby_id: lobby.id }
     end
 
-    subject { post api_v1_players_path, params: { player: player_params } }
+    subject { post api_v1_lobby_players_path(lobby_id: lobby.id), params: { player: player_params } }
 
     it 'responds with created HTTP status' do
       subject
@@ -71,8 +76,7 @@ RSpec.describe 'PlayersAPI', type: :request do
         parsed_response = JSON.parse(response.body, symbolize_names: true)
         expect(parsed_response).to eq(
           errors: [
-            { attribute: 'hat', error: 'blank', message: 'can\'t be blank' },
-            { attribute: 'lobby', error: 'blank', message: 'must exist' }
+            { attribute: 'hat', error: 'blank', message: 'can\'t be blank' }
           ]
         )
       end
@@ -80,7 +84,7 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'show' do
-    let(:player) { FactoryBot.create(:player) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
 
     subject { get api_v1_player_path(id: player.id) }
 
@@ -99,7 +103,7 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:player) { FactoryBot.create(:player) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
     let(:player_params) do
       { hat: 'earth' }
     end
@@ -126,7 +130,7 @@ RSpec.describe 'PlayersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:player) { FactoryBot.create(:player) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
 
     subject { delete api_v1_player_path(id: player.id) }
 

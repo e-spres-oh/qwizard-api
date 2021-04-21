@@ -3,8 +3,13 @@
 require 'rails_helper'
 
 RSpec.describe 'LobbiesAPI', type: :request do
+  let(:user) { FactoryBot.create(:user) }
+  let(:quiz) { FactoryBot.create(:quiz, user: user) }
+
+  before { post api_v1_login_path, params: { user: { username: quiz.user.username, password: quiz.user.password } } }
+
   describe 'index' do
-    subject { get api_v1_lobbies_path }
+    subject { get api_v1_quiz_lobbies_path(quiz_id: quiz.id) }
 
     it 'responds with successful HTTP status' do
       subject
@@ -13,8 +18,8 @@ RSpec.describe 'LobbiesAPI', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      foo_lobby = FactoryBot.create(:lobby)
-      bar_lobby = FactoryBot.create(:lobby)
+      foo_lobby = FactoryBot.create(:lobby, quiz: quiz)
+      bar_lobby = FactoryBot.create(:lobby, quiz: quiz)
 
       subject
 
@@ -24,12 +29,11 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'create' do
-    let(:quiz) { FactoryBot.create(:quiz) }
     let(:lobby_params) do
       { status: 'pending', quiz_id: quiz.id, current_question_index: 2 }
     end
 
-    subject { post api_v1_lobbies_path, params: { lobby: lobby_params } }
+    subject { post api_v1_quiz_lobbies_path(quiz_id: quiz.id), params: { lobby: lobby_params } }
 
     it 'responds with created HTTP status' do
       subject
@@ -57,7 +61,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
     context 'invalid parameters' do
       let(:lobby_params) do
-        { status: 'pending' }
+        { something: 'pending' }
       end
 
       it 'responds with unprocessable_entity HTTP status' do
@@ -70,13 +74,13 @@ RSpec.describe 'LobbiesAPI', type: :request do
         subject
 
         parsed_response = JSON.parse(response.body, symbolize_names: true)
-        expect(parsed_response).to eq(errors: [{ attribute: 'quiz', error: 'blank', message: 'must exist' }])
+        expect(parsed_response).to eq(errors: [{ attribute: 'status', error: 'blank', message: 'can\'t be blank' }])
       end
     end
   end
 
   describe 'show' do
-    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
 
     subject { get api_v1_lobby_path(id: lobby.id) }
 
@@ -95,7 +99,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'update' do
-    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
     let(:lobby_params) do
       { status: 'in_progress' }
     end
@@ -122,7 +126,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
 
     subject { delete api_v1_lobby_path(id: lobby.id) }
 

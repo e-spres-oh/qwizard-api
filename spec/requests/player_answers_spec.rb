@@ -3,8 +3,17 @@
 require 'rails_helper'
 
 RSpec.describe 'PlayerAnswersAPI', type: :request do
+  let(:user) { FactoryBot.create(:user) }
+  let(:quiz) { FactoryBot.create(:quiz, user: user) }
+  let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+  let(:player) { FactoryBot.create(:player, lobby: lobby) }
+
+  before { post api_v1_login_path, params: { user: { username: quiz.user.username, password: quiz.user.password } } }
+
   describe 'index' do
-    subject { get api_v1_player_answers_path }
+    # subject { get api_v1_answer_player_answers_path(answer_id: answer.id) }
+
+    subject { get api_v1_player_player_answers_path(player_id: player.id) }
 
     it 'responds with successful HTTP status' do
       subject
@@ -13,8 +22,8 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
     end
 
     it 'responds with the current lobbies' do
-      player_one_answer = FactoryBot.create(:player_answer)
-      player_two_answer = FactoryBot.create(:player_answer)
+      player_one_answer = FactoryBot.create(:player_answer, player: player)
+      player_two_answer = FactoryBot.create(:player_answer, player: player)
 
       subject
 
@@ -25,12 +34,13 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
 
   describe 'create' do
     let(:answer) { FactoryBot.create(:answer) }
-    let(:player) { FactoryBot.create(:player) }
     let(:player_answer_params) do
       { player_id: player.id, answer_id: answer.id }
     end
 
-    subject { post api_v1_player_answers_path, params: { player_answer: player_answer_params } }
+    subject do
+      post api_v1_player_player_answers_path(player_id: player.id), params: { player_answer: player_answer_params }
+    end
 
     it 'responds with created HTTP status' do
       subject
@@ -75,7 +85,7 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'show' do
-    let(:player_answer) { FactoryBot.create(:player_answer) }
+    let(:player_answer) { FactoryBot.create(:player_answer, player: player) }
 
     subject { get api_v1_player_answer_path(id: player_answer.id) }
 
@@ -94,7 +104,7 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'update' do
-    let(:player_answer) { FactoryBot.create(:player_answer) }
+    let(:player_answer) { FactoryBot.create(:player_answer, player: player) }
     let(:new_answer) { FactoryBot.create(:answer) }
     let(:player_answer_params) do
       { answer_id: new_answer.id }
@@ -122,7 +132,7 @@ RSpec.describe 'PlayerAnswersAPI', type: :request do
   end
 
   describe 'destroy' do
-    let(:player_answer) { FactoryBot.create(:player_answer) }
+    let(:player_answer) { FactoryBot.create(:player_answer, player: player) }
 
     subject { delete api_v1_player_answer_path(id: player_answer.id) }
 
