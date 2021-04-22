@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe 'Users API', type: :request do
+  let(:user) { FactoryBot.create(:user) }
+
+  before { post api_v1_login_path, params: { user: { username: user.username, password: user.password } } }
+
   describe 'index' do
     subject { get api_v1_users_path }
 
@@ -12,14 +16,14 @@ RSpec.describe 'Users API', type: :request do
       expect(response).to have_http_status(:success)
     end
 
-    it 'responds with the current userzes' do
+    it 'responds with the current user' do
       foo_user = FactoryBot.create(:user)
       bar_user = FactoryBot.create(:user)
 
       subject
 
       parsed_response = JSON.parse(response.body)
-      expected = [foo_user, bar_user].map { |u| u.slice(:id, :email, :hat, :username, :created_at, :updated_at) }.as_json
+      expected = [user, foo_user, bar_user].map { |u| u.slice(:id, :email, :hat, :username, :created_at, :updated_at) }.as_json
       expect(parsed_response).to eq(expected)
     end
   end
