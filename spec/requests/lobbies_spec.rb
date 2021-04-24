@@ -80,7 +80,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
   end
 
   describe 'show' do
-    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
 
     subject { get api_v1_lobby_path(id: lobby.id) }
 
