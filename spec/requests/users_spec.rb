@@ -19,7 +19,7 @@ RSpec.describe 'Users API', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq([foo_user, bar_user].as_json.except("password"))
+      expect(parsed_response).to eq([foo_user, bar_user].as_json.map { |item| item.except("password") })
     end
   end
 
