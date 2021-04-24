@@ -4,11 +4,11 @@ require 'rails_helper'
 
 RSpec.describe 'PlayersAPI', type: :request do
 
-  let(:lobby) {FactoryBot.create(:lobby)}
-  let(:username) {lobby.quiz.user.username}
-  let(:password) {lobby.quiz.user.password}
+  let(:lobby) { FactoryBot.create(:lobby) }
+  let(:username) { lobby.quiz.user.username }
+  let(:password) { lobby.quiz.user.password }
 
-  before {post api_v1_login_path, params: {user: {username: username, password: password}}}
+  before { post api_v1_login_path, params: {user: {username: username, password: password } } }
 
   describe 'index' do
     subject { get api_v1_lobby_players_path(lobby_id: lobby.id) }
