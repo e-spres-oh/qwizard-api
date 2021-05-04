@@ -4,7 +4,7 @@ module Api
   module V1
     class LobbiesController < AuthenticatedController
       before_action :require_authentication, except: [:from_code, :join]
-      before_action :require_authorisation, only: [:show, :update, :destroy]
+      before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
       def join
@@ -22,6 +22,19 @@ module Api
         return head :not_found if @lobby.nil?
 
         render :show
+      end
+
+      def start
+        @lobby = Lobby.find(params[:id])
+        @lobby.update(status: :in_progress)
+        Pusher.trigger(@lobby.code, Lobby::LOBBY_START, { })
+
+        render :show
+      end
+
+      def answer
+        @lobby = Lobby.find(params[:id])
+        Pusher.trigger(@lobby.code, Lobby::LOBBY_START, { })
       end
 
       def index
