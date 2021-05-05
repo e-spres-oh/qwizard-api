@@ -4,16 +4,23 @@ module Api
   module V1
     class LobbiesController < AuthenticatedController
       before_action :require_authentication, except: [:from_code, :join]
+      before_action :set_lobby, only: [:join, :start, :show, :update, :destroy]
       before_action :require_authorisation, only: [:show, :update, :destroy]
       before_action :set_quiz, only: [:index, :create]
 
       def join
-        lobby = Lobby.find(params[:id])
+        @player = @lobby.players.create(player_params)
 
-        @player = lobby.players.create(player_params)
-
-        Pusher.trigger(lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
+        Pusher.trigger(@lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
+      end
+
+      def start
+        @lobby.status = :in_progress
+        @lobby.save
+
+        Pusher.trigger(@lobby.code, Lobby::LOBBY_START)
+        render :show
       end
 
       def from_code
@@ -44,13 +51,10 @@ module Api
       end
 
       def show
-        @lobby = Lobby.find(params[:id])
         render :show
       end
 
       def update
-        @lobby = Lobby.find(params[:id])
-
         if @lobby.update(lobby_params)
           render :show
         else
@@ -59,7 +63,6 @@ module Api
       end
 
       def destroy
-        @lobby = Lobby.find(params[:id])
         @lobby.destroy
 
         render :show
@@ -68,13 +71,15 @@ module Api
       private
 
       def require_authorisation
-        lobby = Lobby.find(params[:id])
-
-        head :unauthorized if lobby.quiz.user != current_user
+        head :unauthorized if @lobby.quiz.user != current_user
       end
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
+      end
+
+      def set_lobby
+        @lobby = Lobby.find(params[:id])
       end
 
       def player_params

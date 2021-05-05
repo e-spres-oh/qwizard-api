@@ -226,4 +226,33 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::PLAYER_JOIN, { id: Player.last.id })
     end
   end
+
+  describe 'start' do
+    let(:lobby) { FactoryBot.create(:lobby) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+    end
+
+    subject { patch start_api_v1_lobby_path(id: lobby.id) }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with changed Lobby status to in_progress' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq(lobby.reload.as_json.merge('quiz_master' => lobby.quiz.user.username))
+    end
+
+    it 'triggers a LOBBY_START Pusher event' do
+      subject
+
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START)
+    end
+  end
 end
