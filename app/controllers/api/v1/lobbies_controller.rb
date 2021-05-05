@@ -16,6 +16,41 @@ module Api
         render :player, status: :created
       end
 
+      def start
+        @lobby = Lobby.find(params[:id])
+
+        return head :not_found if @lobby.nil?
+
+        @lobby.status = :in_progress
+
+        if @lobby.save
+          Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
+          render :show
+        else
+          render 'api/v1/model_errors', locals: { errors: @lobby.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def answer
+        @player = Player.find(params[:player_id])
+        @lobby = Lobby.find(params[:id])
+        @question = @lobby.quiz.questions.detect {|question| question.order === @lobby.current_question_index}
+        return head :unauthorized unless @lobby.players.include? @player
+
+        return head :not_found if @lobby.nil?
+
+        @question.player_answers.where(player_id: @player.id).delete_all
+
+
+        params[:answers].each do |answer|
+          PlayerAnswer.create(answer_id: answer, player_id: @player.id)
+        end
+
+        Pusher.trigger(@lobby.code, Lobby::ANSWER_SENT, { answer_count: @question.player_answers.distinct.count('player_id') })
+
+        render @question.answers
+      end
+
       def from_code
         @lobby = Lobby.find_by(code: params[:code])
 
@@ -75,6 +110,14 @@ module Api
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
+
+        return head :not_found if @quiz.nil?
+      end
+
+      def set_player
+        @player = Player.find(params[:player_id])
+
+        return head :not_found if @quiz.nil?
       end
 
       def player_params

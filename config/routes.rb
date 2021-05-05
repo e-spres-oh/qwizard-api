@@ -18,7 +18,8 @@ Rails.application.routes.draw do
       end
 
       get 'lobbies/from_code/:code', to: 'lobbies#from_code', as: :lobby_from_code
-
+      post 'lobbies/:id/start', to: 'lobbies#start', as: :lobby_start
+      post 'lobbies/:id/answer', to: 'lobbies#answer', as: :lobby_answer
       resources :users
 
       post :login, to: 'sessions#login'
