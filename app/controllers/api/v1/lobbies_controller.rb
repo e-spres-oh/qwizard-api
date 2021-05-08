@@ -4,26 +4,34 @@ module Api
   module V1
     class LobbiesController < AuthenticatedController
       before_action :require_authentication, except: [:from_code, :join, :answer]
+      before_action :set_lobby, only: [:answer, :start, :destroy, :update, :show, :join]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
+
+      def players_done
+        question = Question.find_by(id: params[:question_id])
+
+        return head :not_found if question.nil?
+
+        @players = PlayerAnswer.where(answer_id: question.answers.map(&:id)).map(&:player).uniq
+
+        render :players
+      end
 
       def answer
         player = Player.find_by(id: params[:player_id])
 
         return head :not_found if player.blank?
 
-        lobby = Lobby.find(params[:id])
-        question = lobby.quiz.questions.find_by(order: lobby.current_question_index)
+        @answers = @lobby.quiz.questions.find_by(order: @lobby.current_question_index).answers
 
-        create_player_answers!(player, question)
-        notify_answer_count(lobby)
+        create_player_answers!(player)
+        notify_answer_count
 
-        @answers = question.answers
         render :answer
       end
 
       def start
-        @lobby = Lobby.find(params[:id])
         @lobby.update!(status: :in_progress)
         Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
 
@@ -33,11 +41,9 @@ module Api
       end
 
       def join
-        lobby = Lobby.find(params[:id])
+        @player = @lobby.players.create(player_params)
 
-        @player = lobby.players.create(player_params)
-
-        Pusher.trigger(lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
+        Pusher.trigger(@lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
       end
 
@@ -69,13 +75,10 @@ module Api
       end
 
       def show
-        @lobby = Lobby.find(params[:id])
         render :show
       end
 
       def update
-        @lobby = Lobby.find(params[:id])
-
         if @lobby.update(lobby_params)
           render :show
         else
@@ -84,7 +87,6 @@ module Api
       end
 
       def destroy
-        @lobby = Lobby.find(params[:id])
         @lobby.destroy
 
         render :show
@@ -93,17 +95,19 @@ module Api
       private
 
       def require_authorisation
-        lobby = Lobby.find(params[:id])
-
-        head :unauthorized if lobby.quiz.user != current_user
+        head :unauthorized if @lobby.quiz.user != current_user
       end
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
       end
 
-      def create_player_answers!(player, question)
-        PlayerAnswer.where(player: player, answer_id: question.answers.map(&:id)).destroy_all
+      def set_lobby
+        @lobby = Lobby.find(params[:id])
+      end
+
+      def create_player_answers!(player)
+        PlayerAnswer.where(player: player, answer_id: @answers.map(&:id)).destroy_all
 
         params[:answers].each do |id|
           answer = Answer.find(id)
@@ -111,11 +115,11 @@ module Api
         end
       end
 
-      def notify_answer_count(lobby)
-        players = lobby.players.to_a.select do |p|
-          p.player_answers.any? { |pa| pa.answer.question.order == lobby.current_question_index }
+      def notify_answer_count
+        players = @lobby.players.to_a.select do |p|
+          p.player_answers.any? { |pa| pa.answer.question.order == @lobby.current_question_index }
         end
-        Pusher.trigger(lobby.code, Lobby::ANSWER_SENT, { answer_count: players.count })
+        Pusher.trigger(@lobby.code, Lobby::ANSWER_SENT, { answer_count: players.count })
       end
 
       def player_params
