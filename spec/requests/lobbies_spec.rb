@@ -255,4 +255,61 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START)
     end
   end
+
+  describe 'answer' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    
+    let(:answer1) { FactoryBot.create(:answer, question: question) }
+    let(:answer2) { FactoryBot.create(:answer, question: question) }
+    let(:answer3) { FactoryBot.create(:answer, question: question) }
+    let(:answer4) { FactoryBot.create(:answer, question: question) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+    end
+
+    subject { post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: player.id, answers: [answer1.id, answer2.id, answer3.id, answer4.id] } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'creates PlayerAnswers' do
+      subject
+
+      expect(PlayerAnswer.find_by(answer: answer1)).to be_present
+      expect(PlayerAnswer.find_by(answer: answer2)).to be_present
+      expect(PlayerAnswer.find_by(answer: answer3)).to be_present
+      expect(PlayerAnswer.find_by(answer: answer4)).to be_present
+    end
+
+    it 'returns all question answers' do
+      subject
+
+      expect(JSON.parse(response.body)).to eq(question.answers.as_json)
+    end
+
+    it 'triggers ANSWER_SENT event' do
+      subject
+
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::ANSWER_SENT, { answer_count: 1 })
+    end
+
+    it 'returns not found if wrong player id is given' do
+      post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: 777, answers: [answer1.id, answer2.id, answer3.id, answer4.id] }
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'returns not found if wrong answer id is given' do
+      post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: player.id, answers: [answer1.id, answer2.id, answer3.id, answer4.id, 777] }
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end
