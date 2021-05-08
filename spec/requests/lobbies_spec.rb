@@ -230,9 +230,15 @@ RSpec.describe 'LobbiesAPI', type: :request do
   describe 'start' do
     let(:quiz) { FactoryBot.create(:quiz, user: user) }
     let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:question1) { FactoryBot.create(:question, quiz: quiz) }
+    let(:question2) { FactoryBot.create(:question, quiz: quiz) }
+    let(:question3) { FactoryBot.create(:question, quiz: quiz) }
 
     before do
       allow(Pusher).to receive(:trigger)
+      question1
+      question2
+      question3
     end
 
     subject { post start_api_v1_lobby_path(id: lobby.id) }
