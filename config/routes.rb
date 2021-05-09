@@ -13,6 +13,7 @@ Rails.application.routes.draw do
           post :join, on: :member
           post :start, on: :member
           post :players_done, on: :member
+          get :score, on: :member
 
           resources :players, shallow: true do
             resources :player_answers, shallow: true

@@ -372,4 +372,62 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(JSON.parse(response.body)).to eq(players.as_json)
     end
   end
+
+  describe 'score' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:question1) { FactoryBot.create(:question, quiz: quiz, points: 100, answer_type: 'single') }
+    let(:question2) { FactoryBot.create(:question, quiz: quiz, points: 200, answer_type: 'multiple') }
+
+    let(:player1) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player2) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player3) { FactoryBot.create(:player, lobby: lobby) }
+
+    let(:answer1) { FactoryBot.create(:answer, question: question1, is_correct: true) }
+    let(:answer2) { FactoryBot.create(:answer, question: question1, is_correct: false) }
+    let(:answer3) { FactoryBot.create(:answer, question: question1, is_correct: false) }
+
+    let(:answer4) { FactoryBot.create(:answer, question: question2, is_correct: false) }
+    let(:answer5) { FactoryBot.create(:answer, question: question2, is_correct: true) }
+    let(:answer6) { FactoryBot.create(:answer, question: question2, is_correct: true) }
+
+    let(:player_answer1) { FactoryBot.create(:player_answer, answer: answer1, player: player1) }
+    let(:player_answer2) { FactoryBot.create(:player_answer, answer: answer2, player: player2) }
+    let(:player_answer3) { FactoryBot.create(:player_answer, answer: answer3, player: player3) }
+
+    let(:player_answer4) { FactoryBot.create(:player_answer, answer: answer4, player: player1) }
+    let(:player_answer5) { FactoryBot.create(:player_answer, answer: answer5, player: player2) }
+    let(:player_answer6) { FactoryBot.create(:player_answer, answer: answer5, player: player3) }
+    let(:player_answer7) { FactoryBot.create(:player_answer, answer: answer6, player: player3) }
+
+    before do
+      player_answer1
+      player_answer2
+      player_answer3
+      player_answer4
+      player_answer5
+      player_answer6
+      player_answer7
+    end
+
+    subject { get score_api_v1_lobby_path(id: lobby.id) }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with the score' do
+      subject
+
+      score = [
+        { name: player1.name, hat: player1.hat, points: 100 },
+        { name: player2.name, hat: player2.hat, points: 0 },
+        { name: player3.name, hat: player3.hat, points: 200 }
+      ]
+
+      expect(JSON.parse(response.body)).to eq(score.as_json)
+    end
+  end
 end
