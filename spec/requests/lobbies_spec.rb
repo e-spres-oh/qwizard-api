@@ -246,7 +246,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
     it 'triggers a LOBBY_START Pusher event' do
       subject
 
-      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START, { })
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START, {})
     end
   end
 

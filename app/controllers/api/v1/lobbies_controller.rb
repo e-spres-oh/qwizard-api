@@ -27,11 +27,12 @@ module Api
       def start
         @lobby = Lobby.find(params[:id])
         @lobby.update(status: :in_progress)
-        Pusher.trigger(@lobby.code, Lobby::LOBBY_START, { })
+        Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
 
         render :show
       end
 
+      # rubocop:disable Metrics/AbcSize
       def answer
         @player = Player.find_by(id: params[:player_id])
         return head :not_found if @player.nil?
@@ -40,8 +41,15 @@ module Api
         question = @lobby.quiz.questions.find_by(order: @lobby.current_question_index)
         @answers = question.answers
 
-        PlayerAnswer.where(player: @player, answer_id: question.answers.map { |x| x.id }).delete_all
+        PlayerAnswer.where(player: @player, answer_id: question.answers.map(&:id)).delete_all
 
+        create_count_notify
+
+        render :answer
+      end
+      # rubocop:enable Metrics/AbcSize
+
+      def create_count_notify
         params[:answers].each do |id|
           answer = Answer.find(id)
           PlayerAnswer.create(player: @player, answer: answer)
@@ -54,8 +62,6 @@ module Api
         end
 
         Pusher.trigger(@lobby.code, Lobby::ANSWER_SENT, { answer_count: players.count })
-
-        render :answer
       end
 
       def index
