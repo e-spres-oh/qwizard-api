@@ -3,7 +3,7 @@
 module Api
   module V1
     class LobbiesController < AuthenticatedController
-      before_action :require_authentication, except: [:from_code, :join]
+      before_action :require_authentication, except: [:from_code, :join, :answer]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
@@ -33,8 +33,29 @@ module Api
       end
 
       def answer
+        @player = Player.find_by(id: params[:player_id])
+        return head :not_found if @player.nil?
+
         @lobby = Lobby.find(params[:id])
-        Pusher.trigger(@lobby.code, Lobby::LOBBY_START, { })
+        question = @lobby.quiz.questions.find_by(order: @lobby.current_question_index)
+        @answers = question.answers
+
+        PlayerAnswer.where(player: @player, answer_id: question.answers.map { |x| x.id }).delete_all
+
+        params[:answers].each do |id|
+          answer = Answer.find(id)
+          PlayerAnswer.create(player: @player, answer: answer)
+        end
+
+        players = @lobby.players.to_a.select do |player|
+          player.player_answers.any? do |pa|
+            pa.answer.in?(@answers)
+          end
+        end
+
+        Pusher.trigger(@lobby.code, Lobby::ANSWER_SENT, { answer_count: players.count })
+
+        render :answer
       end
 
       def index
