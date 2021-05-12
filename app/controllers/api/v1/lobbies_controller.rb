@@ -3,10 +3,26 @@
 module Api
   module V1
     class LobbiesController < AuthenticatedController
-      before_action :require_authentication, except: [:from_code, :join, :answer]
+      before_action :require_authentication, except: [:from_code, :join, :answer, :players_done]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
+      def players_done
+        @lobby = Lobby.find(params[:id])
+        question = Question.find_by(id: params[:question_id])
+
+        return head :not_found if question.blank?
+
+        @players = PlayerAnswer.where(answer_id: question.answers(&:id), player_id: @lobby.players(&:id)).uniq
+
+        render :players
+      end
+
+      def score
+        @lobby = Lobby.find(params[:id])
+        
+      end
+      
       def answer
         player = Player.find_by(id: params[:player_id])
 
