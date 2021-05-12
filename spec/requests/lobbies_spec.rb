@@ -226,4 +226,54 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::PLAYER_JOIN, { id: Player.last.id })
     end
   end
+
+  describe 'start' do
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+    end
+    
+    subject { post start_api_v1_lobby_path(id: lobby.id) }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'triggers a LOBBY_START Pusher event' do
+      subject
+
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START, {})
+    end
+  end
+
+  describe 'answer' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:answerA) { FactoryBot.create(:answer, question: question) }
+    let(:answerB) { FactoryBot.create(:answer, question: question) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+    end
+
+    subject { post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: player.id, answers: [answerA.id, answerB.id] } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'triggers a ANSWER_SENT Pusher event' do
+      subject
+
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::ANSWER_SENT, { answer_count: 1 })
+    end
+  end
 end
