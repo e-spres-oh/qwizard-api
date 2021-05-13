@@ -19,8 +19,17 @@ module Api
       end
 
       def score
-        @lobby = Lobby.find(params[:id])
-        
+        lobby = Lobby.find(params[:id])
+
+        @results = lobby.players.map do |player|
+          {
+            name: player.name,
+            hat: player.hat,
+            points: get_points(lobby, player)
+          }
+        end
+
+        render :score
       end
       
       def answer
@@ -107,6 +116,22 @@ module Api
       end
 
       private
+
+      def get_points(lobby, player)
+        lobby.quiz.questions.map do |question|
+          correct_answers = question.answers.select { |answer| answer.is_correct }
+          if PlayerAnswer.where(player: player, answer: correct_answers).count == correct_answers.count == PlayerAnswer.where(player: player).count
+            question.points
+          else
+            0
+          end
+            #if PlayerAnswer == question.answers.select {|answer| answer.is_correct}
+          #   questions.score
+          #else
+          #   0
+          #end
+        end.sum
+      end
 
       def require_authorisation
         lobby = Lobby.find(params[:id])
