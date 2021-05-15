@@ -35,13 +35,7 @@ module Api
 
         return head :not_found if player.blank?
 
-        lobby = Lobby.find(params[:id])
-        question = lobby.quiz.questions.find_by(order: lobby.current_question_index)
-
-        create_player_answers!(player, question)
-        notify_answer_count(lobby)
-
-        @answers = question.answers
+        @answers = AnswerQuestion.new.call(lobby_id: params[:id], player: player, answers: params[:answers]).answers
         render :answer
       end
 
@@ -123,22 +117,6 @@ module Api
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
-      end
-
-      def create_player_answers!(player, question)
-        PlayerAnswer.where(player: player, answer_id: question.answers.map(&:id)).destroy_all
-
-        params[:answers].each do |id|
-          answer = Answer.find(id)
-          PlayerAnswer.create(player: player, answer: answer)
-        end
-      end
-
-      def notify_answer_count(lobby)
-        players = lobby.players.to_a.select do |p|
-          p.player_answers.any? { |pa| pa.answer.question.order == lobby.current_question_index }
-        end
-        Pusher.trigger(lobby.code, Lobby::ANSWER_SENT, { answer_count: players.count })
       end
 
       def player_params
