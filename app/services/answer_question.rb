@@ -5,7 +5,7 @@ class AnswerQuestion
     lobby = Lobby.find(lobby_id)
     question = lobby.quiz.questions.find_by(order: lobby.current_question_index)
 
-    create_player_answers!(player, question,  answers)
+    create_player_answers!(player, question, answers)
     notify_answer_count(lobby)
 
     question
