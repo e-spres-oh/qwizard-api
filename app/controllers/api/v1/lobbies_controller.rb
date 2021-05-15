@@ -23,7 +23,7 @@ module Api
           {
             name: player.name,
             hat: player.hat,
-            points: calculate_score(player)
+            points: CalculateScore.new.call(player)
           }
         end
 
@@ -123,24 +123,6 @@ module Api
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
-      end
-
-      def calculate_score(player)
-        score = 0
-        grouped_player_answers = player.player_answers.group_by { |player_answer| player_answer.answer.question }
-
-        grouped_player_answers.each do |question, player_answers|
-          next unless answered_correctly?(player_answers, question)
-
-          score += question.points
-        end
-
-        score
-      end
-
-      def answered_correctly?(player_answers, question)
-        player_answers.none? { |player_answer| player_answer.answer.is_correct == false } &&
-          player_answers.count == question.answers.select(&:is_correct).count
       end
 
       def create_player_answers!(player, question)
