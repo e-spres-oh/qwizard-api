@@ -330,4 +330,36 @@ RSpec.describe 'LobbiesAPI', type: :request do
       end
     end
   end
+
+  describe 'players_done' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:player1) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player2) { FactoryBot.create(:player, lobby: lobby) }
+
+    before do
+      FactoryBot.create(:player, lobby: lobby)
+
+      answer = FactoryBot.create(:answer, question: question)
+
+      FactoryBot.create(:player_answer, player: player1, answer: answer)
+      FactoryBot.create(:player_answer, player: player2, answer: answer)
+    end
+
+    subject { post players_done_api_v1_lobby_path(id: lobby.id), params: { question_id: question.id } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with the players that have answered the question' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq([player1, player2].as_json)
+    end
+  end
 end
