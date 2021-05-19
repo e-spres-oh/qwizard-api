@@ -331,6 +331,52 @@ RSpec.describe 'LobbiesAPI', type: :request do
     end
   end
 
+  describe 'score' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player1) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player2) { FactoryBot.create(:player, lobby: lobby) }
+    let(:question1) { FactoryBot.create(:question, quiz: player1.lobby.quiz) }
+    let(:question2) { FactoryBot.create(:question, quiz: player1.lobby.quiz) }
+    let(:question1_answer1) { FactoryBot.create(:answer, question: question1, is_correct: true) }
+    let(:question1_answer2) { FactoryBot.create(:answer, question: question1, is_correct: false) }
+    let(:question2_answer1) { FactoryBot.create(:answer, question: question2, is_correct: false) }
+    let(:question2_answer2) { FactoryBot.create(:answer, question: question2, is_correct: true) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+      player1
+      player2
+    end
+
+    subject { get score_api_v1_lobby_path(id: lobby.id) }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with correct scores if no player answers' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq([{ name: player1.name, hat: player1.hat, points: 0 },{ name: player2.name, hat: player2.hat, points: 0 }].as_json)
+    end
+    
+    it 'responds with correct scores if player answered' do
+      FactoryBot.create(:player_answer, player: player1, answer: question1_answer1)
+      FactoryBot.create(:player_answer, player: player1, answer: question2_answer1)
+      FactoryBot.create(:player_answer, player: player2, answer: question1_answer2)
+      FactoryBot.create(:player_answer, player: player2, answer: question2_answer2)
+
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq([{ name: player1.name, hat: player1.hat, points: question1.points}, { name: player2.name, hat: player2.hat, points: question2.points }].as_json)
+    end
+  end
+
   describe 'players_done' do
     let(:quiz) { FactoryBot.create(:quiz) }
     let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
