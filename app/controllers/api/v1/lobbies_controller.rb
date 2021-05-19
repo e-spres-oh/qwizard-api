@@ -2,28 +2,43 @@
 
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
     class LobbiesController < AuthenticatedController
       before_action :require_authentication, except: [:from_code, :join, :answer]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
+      before_action :set_lobby, only: [:join, :start, :answer, :show, :update, :destroy, :score]
+      before_action :set_question, only: [:players_done]
+
+      def players_done
+        @players = PlayerAnswer.where(answer: @question.answers).map(&:player).uniq
+
+        render :players_done
+      end
+
+      def score
+        @scores = @lobby.players.map do |player|
+          { name: player.name, hat: player.hat, points: count_player_score(@lobby, player) }
+        end
+
+        render :score
+      end
 
       def answer
         player = Player.find_by(id: params[:player_id])
 
         return head :not_found if player.blank?
 
-        lobby = Lobby.find(params[:id])
-        question = lobby.quiz.questions.find_by(order: lobby.current_question_index)
+        question = @lobby.quiz.questions.find_by(order: @lobby.current_question_index)
 
         create_player_answers!(player, question)
-        notify_answer_count(lobby)
+        notify_answer_count(@lobby)
 
         @answers = question.answers
         render :answer
       end
 
       def start
-        @lobby = Lobby.find(params[:id])
         @lobby.update!(status: :in_progress)
         Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
 
@@ -33,11 +48,9 @@ module Api
       end
 
       def join
-        lobby = Lobby.find(params[:id])
+        @player = @lobby.players.create(player_params)
 
-        @player = lobby.players.create(player_params)
-
-        Pusher.trigger(lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
+        Pusher.trigger(@lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
       end
 
@@ -69,13 +82,10 @@ module Api
       end
 
       def show
-        @lobby = Lobby.find(params[:id])
         render :show
       end
 
       def update
-        @lobby = Lobby.find(params[:id])
-
         if @lobby.update(lobby_params)
           render :show
         else
@@ -84,7 +94,6 @@ module Api
       end
 
       def destroy
-        @lobby = Lobby.find(params[:id])
         @lobby.destroy
 
         render :show
@@ -100,6 +109,20 @@ module Api
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
+
+        return head :not_found if @quiz.nil?
+      end
+
+      def set_lobby
+        @lobby = Lobby.find(params[:id])
+
+        return head :not_found if @lobby.nil?
+      end
+
+      def set_question
+        @question = Question.find(params[:question_id])
+
+        return head :not_found if @question.nil?
       end
 
       def create_player_answers!(player, question)
@@ -118,6 +141,24 @@ module Api
         Pusher.trigger(lobby.code, Lobby::ANSWER_SENT, { answer_count: players.count })
       end
 
+      def count_player_score(lobby, player)
+        lobby.quiz.questions.map do |question|
+          calculate_player_question_score(question, player)
+        end.sum
+      end
+
+      def calculate_player_question_score(question, player)
+        correct_answers = question.answers.where(is_correct: true)
+        correct_player_answers_count = PlayerAnswer.where(player: player, answer: correct_answers).count
+        player_answers_count = PlayerAnswer.where(player: player, answer: question.answers).count
+        if correct_player_answers_count == player_answers_count &&
+           correct_player_answers_count == correct_answers.count
+          question.points
+        else
+          0
+        end
+      end
+
       def player_params
         params.require(:player).permit(:name, :hat)
       end
@@ -126,5 +167,6 @@ module Api
         params.require(:lobby).permit(:status, :current_question_index)
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end

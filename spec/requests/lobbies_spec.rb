@@ -233,6 +233,9 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
     before do
       allow(Pusher).to receive(:trigger)
+      FactoryBot.create(:question, quiz: quiz)
+      FactoryBot.create(:question, quiz: quiz)
+      FactoryBot.create(:question, quiz: quiz)
     end
 
     subject { post start_api_v1_lobby_path(id: lobby.id) }
@@ -325,6 +328,196 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
         expect(PlayerAnswer.find_by(player: player, answer: answer1)).to_not be_present
       end
+    end
+  end
+
+  describe 'score' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player1) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player2) { FactoryBot.create(:player, lobby: lobby) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+      player1
+      player2
+    end
+
+    subject { get score_api_v1_lobby_path(id: lobby.id) }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    context 'single answer questions' do
+      let(:question1) { FactoryBot.create(:question, quiz: quiz) }
+      let(:question2) { FactoryBot.create(:question, quiz: quiz) }
+      let(:question1_answer1) { FactoryBot.create(:answer, question: question1, is_correct: true) }
+      let(:question1_answer2) { FactoryBot.create(:answer, question: question1, is_correct: false) }
+      let(:question2_answer1) { FactoryBot.create(:answer, question: question2, is_correct: false) }
+      let(:question2_answer2) { FactoryBot.create(:answer, question: question2, is_correct: true) }
+  
+      before do
+        question1
+        question2
+
+        question1_answer1
+        question1_answer2
+
+        question2_answer1
+        question2_answer2
+      end
+
+      it 'responds with correct scores if no player answers' do
+        subject
+
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq([{ name: player1.name, hat: player1.hat, points: 0 },{ name: player2.name, hat: player2.hat, points: 0 }].as_json)
+      end
+      
+      it 'responds with correct scores if player answered' do
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer1)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer1)
+        FactoryBot.create(:player_answer, player: player2, answer: question1_answer2)
+        FactoryBot.create(:player_answer, player: player2, answer: question2_answer2)
+
+        subject
+
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq([{ name: player1.name, hat: player1.hat, points: question1.points}, { name: player2.name, hat: player2.hat, points: question2.points }].as_json)
+      end
+
+    end
+
+    context 'multiple answer questions' do
+      let(:question1) { FactoryBot.create(:question, quiz: quiz) }
+      let(:question2) { FactoryBot.create(:question, quiz: quiz) }
+      let(:question1_answer1) { FactoryBot.create(:answer, question: question1, is_correct: true) }
+      let(:question1_answer2) { FactoryBot.create(:answer, question: question1, is_correct: false) }
+      let(:question1_answer3) { FactoryBot.create(:answer, question: question1, is_correct: true) }
+      let(:question1_answer4) { FactoryBot.create(:answer, question: question1, is_correct: false) }
+
+      let(:question2_answer1) { FactoryBot.create(:answer, question: question2, is_correct: false) }
+      let(:question2_answer2) { FactoryBot.create(:answer, question: question2, is_correct: true) }
+      let(:question2_answer3) { FactoryBot.create(:answer, question: question2, is_correct: true) }
+      let(:question2_answer4) { FactoryBot.create(:answer, question: question2, is_correct: true) }
+      
+      before do
+        question1
+        question2
+
+        question1_answer1
+        question1_answer2
+        question1_answer3
+        question1_answer4
+
+        question2_answer1
+        question2_answer2
+        question2_answer3
+        question2_answer4
+      end
+
+      it 'responds with correct score if players answered with correct number of answers but not all answers are correct' do
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer2)
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer4)
+
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer1)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer2)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer3)
+
+        subject
+
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq([{ name: player1.name, hat: player1.hat, points: 0 },{ name: player2.name, hat: player2.hat, points: 0 }].as_json)  
+      end
+
+      it 'responds with correct score if players answered with incorrect number of answers but all answers are correct' do
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer2)
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer4)
+
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer1)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer2)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer3)
+        subject
+
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq([{ name: player1.name, hat: player1.hat, points: 0 },{ name: player2.name, hat: player2.hat, points: 0 }].as_json)  
+      end
+
+      it 'responds with correct score if players answered with correct number of answers and all answers are correct' do
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer1)
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer3)
+
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer2)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer3)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer4)
+
+        FactoryBot.create(:player_answer, player: player2, answer: question1_answer1)
+        FactoryBot.create(:player_answer, player: player2, answer: question1_answer3)
+
+        FactoryBot.create(:player_answer, player: player2, answer: question2_answer2)
+        FactoryBot.create(:player_answer, player: player2, answer: question2_answer3)
+        FactoryBot.create(:player_answer, player: player2, answer: question2_answer4)
+        subject
+
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq([{ name: player1.name, hat: player1.hat, points: question1.points + question2.points },{ name: player2.name, hat: player2.hat, points: question1.points + question2.points }].as_json)  
+      end
+
+      it 'responds with correct score with mixed answers' do
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer2)
+        FactoryBot.create(:player_answer, player: player1, answer: question1_answer3)
+
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer2)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer3)
+        FactoryBot.create(:player_answer, player: player1, answer: question2_answer4)
+
+        FactoryBot.create(:player_answer, player: player2, answer: question1_answer1)
+        FactoryBot.create(:player_answer, player: player2, answer: question1_answer3)
+
+        FactoryBot.create(:player_answer, player: player2, answer: question2_answer3)
+        FactoryBot.create(:player_answer, player: player2, answer: question2_answer4)
+        subject
+
+        parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq([{ name: player1.name, hat: player1.hat, points: question2.points },{ name: player2.name, hat: player2.hat, points: question1.points }].as_json)  
+      
+      end
+    end
+    
+  end
+
+  describe 'players_done' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:player1) { FactoryBot.create(:player, lobby: lobby) }
+    let(:player2) { FactoryBot.create(:player, lobby: lobby) }
+
+    before do
+      FactoryBot.create(:player, lobby: lobby)
+
+      answer = FactoryBot.create(:answer, question: question)
+
+      FactoryBot.create(:player_answer, player: player1, answer: answer)
+      FactoryBot.create(:player_answer, player: player2, answer: answer)
+    end
+
+    subject { post players_done_api_v1_lobby_path(id: lobby.id), params: { question_id: question.id } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with the players that have answered the question' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq([player1, player2].as_json)
     end
   end
 end
