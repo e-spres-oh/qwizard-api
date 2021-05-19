@@ -117,7 +117,7 @@ module Api
       end
 
       def replace_player_answers
-        @question.player_answers.where(player_id: @player.id).delete_all
+        @question.player_answers.where(player_id: @player.id).destroy_all
 
         params[:answers].each do |answer|
           PlayerAnswer.create(answer_id: answer, player_id: @player.id)
