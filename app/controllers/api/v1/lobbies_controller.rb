@@ -2,6 +2,7 @@
 
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
     class LobbiesController < AuthenticatedController
       before_action :require_authentication, except: [:from_code, :join, :answer]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
@@ -145,10 +146,10 @@ module Api
           correct_answers = question.answers.to_a.select(&:is_correct)
           number_of_correct_player_answers = PlayerAnswer.where(player: player, answer: correct_answers).count
           number_of_player_answers = PlayerAnswer.where(player: player, answer: question.answers).count
-          if number_of_player_answers == 0 || number_of_correct_player_answers != number_of_player_answers
-            0
-          else
+          if number_of_correct_player_answers == number_of_player_answers
             question.points
+          else
+            0
           end
         end.sum
       end
@@ -161,5 +162,6 @@ module Api
         params.require(:lobby).permit(:status, :current_question_index)
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
