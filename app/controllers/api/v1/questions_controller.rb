@@ -6,6 +6,15 @@ module Api
       before_action :require_authentication, except: [:index, :show]
       before_action :require_authorisation, only: [:update, :destroy]
       before_action :set_quiz, only: [:index, :create]
+      before_action :set_question, only: [:destroy, :update, :show, :upload_image]
+
+      def upload_image
+        if @question.image.attach(params.require(:image))
+          render :show
+        else
+          render 'api/v1/model_errors', locals: { errors: @question.errors }, status: :unprocessable_entity
+        end
+      end
 
       def index
         @questions = @quiz.questions.all
@@ -26,13 +35,10 @@ module Api
       end
 
       def show
-        @question = Question.find(params[:id])
         render :show
       end
 
       def update
-        @question = Question.find(params[:id])
-
         if @question.update(question_params)
           render :show
         else
@@ -41,7 +47,6 @@ module Api
       end
 
       def destroy
-        @question = Question.find(params[:id])
         @question.destroy
 
         render :show
@@ -53,6 +58,12 @@ module Api
         question = Question.find(params[:id])
 
         head :unauthorized if question.quiz.user != current_user
+      end
+
+      def set_question
+        @question = Question.find(params[:id])
+
+        head :not_found if @question.nil?
       end
 
       def set_quiz
