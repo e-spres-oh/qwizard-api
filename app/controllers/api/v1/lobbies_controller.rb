@@ -143,15 +143,20 @@ module Api
 
       def count_player_score(lobby, player)
         lobby.quiz.questions.map do |question|
-          correct_answers = question.answers.to_a.select(&:is_correct)
-          number_of_correct_player_answers = PlayerAnswer.where(player: player, answer: correct_answers).count
-          number_of_player_answers = PlayerAnswer.where(player: player, answer: question.answers).count
-          if number_of_correct_player_answers == number_of_player_answers
-            question.points
-          else
-            0
-          end
+          calculate_player_question_score(question, player)
         end.sum
+      end
+
+      def calculate_player_question_score(question, player)
+        correct_answers = question.answers.where(is_correct: true)
+        correct_player_answers_count = PlayerAnswer.where(player: player, answer: correct_answers).count
+        player_answers_count = PlayerAnswer.where(player: player, answer: question.answers).count
+        if correct_player_answers_count == player_answers_count &&
+           correct_player_answers_count == correct_answers.count
+          question.points
+        else
+          0
+        end
       end
 
       def player_params
