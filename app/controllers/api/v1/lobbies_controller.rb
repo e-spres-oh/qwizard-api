@@ -15,7 +15,6 @@ module Api
         render :players_done
       end
 
-
       def score
         scores = []
 
@@ -146,7 +145,7 @@ module Api
       def count_player_score(lobby, player)
         correct_questions_score = []
         lobby.question.each do |question|
-          correct_answers = question.answers.select { |answer| answer.is_correct  }
+          correct_answers = question.answers.select(is_correct: true)
           player_answers = PlayerAnswer.find(player: player).where(answer: question.answers)
           correct_questions_score << question.score if (correct_answers - player_answers).blank?
         end

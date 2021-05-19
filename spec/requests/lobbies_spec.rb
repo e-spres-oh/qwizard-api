@@ -233,6 +233,9 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
     before do
       allow(Pusher).to receive(:trigger)
+      FactoryBot.create(:question, quiz: quiz)
+      FactoryBot.create(:question, quiz: quiz)
+      FactoryBot.create(:question, quiz: quiz)
     end
 
     subject { post start_api_v1_lobby_path(id: lobby.id) }
