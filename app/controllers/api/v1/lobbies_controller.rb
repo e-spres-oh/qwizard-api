@@ -16,10 +16,8 @@ module Api
       end
 
       def score
-        scores = []
-
-        @lobby.players.each do |player|
-          scores << { name: player.name, hat: player.hat, score: count_player_score(@lobby, player) }
+        @scores = @lobby.players.map do |player|
+          { name: player.name, hat: player.hat, points: count_player_score(@lobby, player) }
         end
 
         render :score
@@ -143,13 +141,16 @@ module Api
       end
 
       def count_player_score(lobby, player)
-        correct_questions_score = []
-        lobby.question.each do |question|
-          correct_answers = question.answers.select(is_correct: true)
-          player_answers = PlayerAnswer.find(player: player).where(answer: question.answers)
-          correct_questions_score << question.score if (correct_answers - player_answers).blank?
-        end
-        correct_questions_score.sum
+        lobby.quiz.questions.map do |question|
+          correct_answers = question.answers.to_a.select(&:is_correct)
+          number_of_correct_player_answers = PlayerAnswer.where(player: player, answer: correct_answers).count
+          number_of_player_answers = PlayerAnswer.where(player: player, answer: question.answers).count
+          if number_of_player_answers == 0 || number_of_correct_player_answers != number_of_player_answers
+            0
+          else
+            question.points
+          end
+        end.sum
       end
 
       def player_params
