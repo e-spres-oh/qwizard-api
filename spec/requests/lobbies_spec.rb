@@ -255,6 +255,11 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START, {})
     end
 
+    it 'changes lobby status to :in_progress' do
+      subject
+      
+      expect(lobby.reload.status).to eq("in_progress")
+    end
   end
 
   describe 'answer' do
@@ -268,7 +273,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
       allow(Pusher).to receive(:trigger)
     end
 
-    subject { post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: player.id, answers: [answer]} }
+    subject { post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: player.id, answers: [answer.id]} }
 
     it 'responds with successful HTTP status' do
       subject
@@ -286,7 +291,24 @@ RSpec.describe 'LobbiesAPI', type: :request do
     it 'trigger an ANSWER_SENT Pusher event' do
       subject
 
-      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::ANSWER_SENT, { answer_count: 0 })
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::ANSWER_SENT, { answer_count: 1 })
+    end
+
+    it 'deletes old player_answers' do
+      player_answer = FactoryBot.create(:player_answer, player: player, answer: answer)
+
+      subject
+
+      expect(PlayerAnswer.find_by id: player_answer.id).to eq(nil)
+    end
+
+    it 'creates new player_answers' do
+      subject
+
+      player_answer = PlayerAnswer.last
+
+      expect(player_answer.answer).to eq(answer)
+      expect(player_answer.player).to eq(player)
     end
   end
 end
