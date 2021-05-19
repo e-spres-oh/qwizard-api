@@ -4,16 +4,39 @@ module Api
   module V1
     class LobbiesController < AuthenticatedController
       before_action :require_authentication, except: [:from_code, :join]
-      before_action :require_authorisation, only: [:show, :update, :destroy]
+      before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
+      before_action :set_lobby, only: [:join, :start, :answer, :show, :update, :destroy]
+      before_action :set_player, only: [:answer]
+      before_action :set_current_question, only: [:answer]
 
       def join
-        lobby = Lobby.find(params[:id])
+        @player = @lobby.players.create(player_params)
 
-        @player = lobby.players.create(player_params)
-
-        Pusher.trigger(lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
+        Pusher.trigger(@lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
+      end
+
+      def start
+        @lobby.status = :in_progress
+
+        if @lobby.save
+          Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
+          render :show
+        else
+          render 'api/v1/model_errors', locals: { errors: @lobby.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def answer
+        return head :unauthorized unless @lobby.players.include? @player
+
+        replace_player_answers
+
+        Pusher.trigger(@lobby.code, Lobby::ANSWER_SENT,
+                       { answer_count: @question.player_answers.distinct.count('player_id') })
+
+        render @question.answers
       end
 
       def from_code
@@ -44,13 +67,10 @@ module Api
       end
 
       def show
-        @lobby = Lobby.find(params[:id])
         render :show
       end
 
       def update
-        @lobby = Lobby.find(params[:id])
-
         if @lobby.update(lobby_params)
           render :show
         else
@@ -59,7 +79,6 @@ module Api
       end
 
       def destroy
-        @lobby = Lobby.find(params[:id])
         @lobby.destroy
 
         render :show
@@ -75,6 +94,34 @@ module Api
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
+
+        return head :not_found if @quiz.nil?
+      end
+
+      def set_player
+        @player = Player.find(params[:player_id])
+
+        return head :not_found if @player.nil?
+      end
+
+      def set_lobby
+        @lobby = Lobby.find(params[:id])
+
+        return head :not_found if @lobby.nil?
+      end
+
+      def set_current_question
+        @question = @lobby.quiz.questions.detect { |question| question.order == @lobby.current_question_index }
+
+        return head :not_found if @question.nil?
+      end
+
+      def replace_player_answers
+        @question.player_answers.where(player: @player).destroy_all
+
+        params[:answers].each do |answer|
+          PlayerAnswer.create(answer_id: answer, player: @player)
+        end
       end
 
       def player_params

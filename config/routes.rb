@@ -10,6 +10,8 @@ Rails.application.routes.draw do
 
         resources :lobbies, shallow: true do
           post :join, on: :member
+          post :start, on: :member
+          post :answer, on: :member
 
           resources :players, shallow: true do
             resources :player_answers, shallow: true
@@ -18,7 +20,6 @@ Rails.application.routes.draw do
       end
 
       get 'lobbies/from_code/:code', to: 'lobbies#from_code', as: :lobby_from_code
-
       resources :users
 
       post :login, to: 'sessions#login'
