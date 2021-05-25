@@ -211,6 +211,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(player.name).to eq(player_params[:name])
       expect(player.hat).to eq(player_params[:hat])
       expect(player.lobby).to eq(lobby)
+      expect(player.user_id).to eq(user.id)
     end
 
     it 'responds with the created Player model' do
