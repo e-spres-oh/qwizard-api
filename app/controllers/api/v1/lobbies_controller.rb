@@ -3,9 +3,42 @@
 module Api
   module V1
     class LobbiesController < AuthenticatedController
-      before_action :require_authentication, except: [:from_code, :join, :answer]
+      before_action :require_authentication, except: [:players_done, :from_code, :join, :answer, :score]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
+
+      def players_done
+        lobby = Lobby.find(params[:id])
+        question = Question.find_by(id: params[:question_id])
+
+        return head :not_found if question.blank?
+
+        @players = []
+        lobby.players.each do |player|
+          question.answers.each do |answer| 
+            if PlayerAnswer.find_by(player: player, answer: answer) then
+              @players.push(player)
+            end 
+          end 
+        end 
+
+        @players.uniq!
+        render :players
+      end
+
+      def score
+        lobby = Lobby.find(params[:id])
+
+        @results = lobby.players.map do |player|
+          {
+            name: player.name,
+            hat: player.hat,
+            points: get_points(player)
+          }
+        end
+
+        render :score
+      end
 
       def answer
         player = Player.find_by(id: params[:player_id])
@@ -100,6 +133,23 @@ module Api
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
+      end
+
+      def get_points(player)
+        grouped_player_answers = player.player_answers.group_by { |player_answer| player_answer.answer.question }
+
+        grouped_player_answers.each do |question, player_answers|
+          next unless received_points?(question, player_answers, player)
+          question.points
+        end.sum
+
+      end
+
+      def received_points?(question, player_answers, player)
+        correct_answers = question.answers.select { |answer| answer.is_correct }
+        if ((PlayerAnswer.where(player: player, answer: correct_answers).count == correct_answers.count) && (PlayerAnswer.where(player: player).count == correct_answers.count))
+          question
+        end
       end
 
       def create_player_answers!(player, question)
