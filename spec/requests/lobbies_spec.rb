@@ -371,9 +371,9 @@ RSpec.describe 'LobbiesAPI', type: :request do
       let(:question2) { FactoryBot.create(:question, quiz: player1.lobby.quiz) }
 
       before do
-        question1_correct_answer   = FactoryBot.create(:answer, question: question1, is_correct: true)
+        question1_correct_answer = FactoryBot.create(:answer, question: question1, is_correct: true)
         question1_incorrect_answer = FactoryBot.create(:answer, question: question1, is_correct: false)
-        question2_correct_answer   = FactoryBot.create(:answer, question: question2, is_correct: true)
+        question2_correct_answer = FactoryBot.create(:answer, question: question2, is_correct: true)
 
         FactoryBot.create(:player_answer, player: player1, answer: question1_correct_answer)
         FactoryBot.create(:player_answer, player: player1, answer: question2_correct_answer)
@@ -406,7 +406,6 @@ RSpec.describe 'LobbiesAPI', type: :request do
     let(:player1) { FactoryBot.create(:player, lobby: lobby) }
     let(:player2) { FactoryBot.create(:player, lobby: lobby) }
 
-
     before do
       answer = FactoryBot.create(:answer, question: question)
 
@@ -429,6 +428,23 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
       parsed_response = JSON.parse(response.body)
       expect(parsed_response).to eq([player1].as_json)
+    end
+  end
+
+  describe 'finished' do
+    let(:player1) { FactoryBot.create(:player, user: user) }
+    let(:player2) { FactoryBot.create(:player, user: user) }
+    let(:player3) { FactoryBot.create(:player, user: user) }
+    let(:lobby1) { FactoryBot.create(:lobby, player: player1) }
+    let(:lobby2) { FactoryBot.create(:lobby, player: player2) }
+    let(:lobby3) { FactoryBot.create(:lobby, player: player3) }
+
+    subject { get api_v1_lobbies_finished_path }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
     end
   end
 end

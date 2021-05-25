@@ -26,6 +26,7 @@ Rails.application.routes.draw do
         end
       end
 
+      get 'lobbies/finished/', action: :finished_lobbies, controller: 'lobbies', as: :lobbies_finished
       get 'lobbies/from_code/:code', to: 'lobbies#from_code', as: :lobby_from_code
 
       resources :users do

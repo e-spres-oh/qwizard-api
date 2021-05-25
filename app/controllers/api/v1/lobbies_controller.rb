@@ -4,7 +4,7 @@ module Api
   module V1
     class LobbiesController < AuthenticatedController
       before_action :require_authentication, except: [:players_done, :from_code, :join, :answer, :score]
-      before_action :set_lobby, except: [:from_code, :index, :create]
+      before_action :set_lobby, except: [:from_code, :index, :create, :finished_lobbies]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
@@ -55,6 +55,12 @@ module Api
 
         Pusher.trigger(@lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
+      end
+
+      def finished_lobbies
+        @result = current_user.players.map(&:lobby)
+        
+        render :finished_lobbies
       end
 
       def from_code
