@@ -2,10 +2,45 @@
 
 module Api
   module V1
-    class LobbiesController < AuthenticatedController
-      before_action :require_authentication, except: [:from_code, :join, :answer]
+    class LobbiesController < AuthenticatedController # rubocop:disable Metrics/ClassLength
+      before_action :require_authentication, except: [:players_done, :from_code, :join, :answer, :score]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
+
+      # rubocop:disable Metrics/AbcSize
+      # rubocop:disable Metrics/MethodLength
+      def players_done
+        lobby = Lobby.find(params[:id])
+        question = Question.find_by(id: params[:question_id])
+
+        return head :not_found if question.blank?
+
+        @players = []
+        lobby.players.each do |player|
+          question.answers.each do |answer|
+            @players.push(player) if PlayerAnswer.find_by(player: player, answer: answer)
+          end
+        end
+
+        @players.uniq!
+        render :players
+      end
+      # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize
+
+      def score
+        lobby = Lobby.find(params[:id])
+
+        @results = lobby.players.map do |player|
+          {
+            name: player.name,
+            hat: player.hat,
+            points: get_points(lobby, player)
+          }
+        end
+
+        render :score
+      end
 
       def answer
         player = Player.find_by(id: params[:player_id])
@@ -100,6 +135,23 @@ module Api
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
+      end
+
+      def get_points(lobby, player)
+        questions = lobby.quiz.questions
+
+        questions.each do |question|
+          next unless received_points?(question, player)
+
+          question.points
+        end.sum
+      end
+
+      def received_points?(question, player)
+        correct_answers = question.answers.select(&:is_correct)
+        # rubocop:disable Metrics/LineLength
+        question unless (PlayerAnswer.where(player: player, answer: correct_answers).count == correct_answers.count) && (PlayerAnswer.where(player: player).count == correct_answers.count)
+        # rubocop:enable Metrics/LineLength
       end
 
       def create_player_answers!(player, question)
