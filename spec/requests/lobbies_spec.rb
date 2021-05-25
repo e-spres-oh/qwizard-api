@@ -229,10 +229,12 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
   describe 'start' do
     let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
     let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
 
     before do
       allow(Pusher).to receive(:trigger)
+      allow(NotifyQuestionStartJob).to receive(:perform_now)
     end
 
     subject { post start_api_v1_lobby_path(id: lobby.id) }
@@ -260,6 +262,12 @@ RSpec.describe 'LobbiesAPI', type: :request do
       subject
 
       expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START, {})
+    end
+
+    it 'performs NotifyQuestionStartJob' do
+      expect(NotifyQuestionStartJob).to receive(:perform_now).with(lobby_id: lobby.id, question_index: 1)
+
+      subject
     end
   end
 
@@ -326,5 +334,57 @@ RSpec.describe 'LobbiesAPI', type: :request do
         expect(PlayerAnswer.find_by(player: player, answer: answer1)).to_not be_present
       end
     end
+  end
+
+  describe 'players_done' do
+    let(:lobby) { FactoryBot.create(:lobby) }
+    let(:question) { FactoryBot.create(:question, quiz: lobby.quiz) }
+    let(:playerA) { FactoryBot.create(:player, lobby: lobby) }
+    let(:playerB) { FactoryBot.create(:player, lobby: lobby) }
+
+
+    before do
+      answer = FactoryBot.create(:answer, question: question)
+
+      playerA
+      playerB
+
+      FactoryBot.create(:player_answer, player: playerA, answer: answer)
+    end
+
+    subject { get players_done_api_v1_lobby_path(id: lobby.id), params: { question_id: question.id } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with the players\'s that have answered the question' do
+      subject
+
+      parsed_response = JSON.parse(response.body)
+      expect(parsed_response).to eq([playerA].as_json)
+    end
+  end
+end
+
+describe 'score' do
+  let(:lobby) { FactoryBot.create(:lobby) }
+  let(:playerA) { FactoryBot.create(:player, lobby: lobby) }
+  let(:playerB) { FactoryBot.create(:player, lobby: lobby) }
+
+  before do
+    allow(Pusher).to receive(:trigger)
+    playerA
+    playerB
+  end
+
+  subject { get score_api_v1_lobby_path(id: lobby.id) }
+
+  it 'responds with successful HTTP status' do
+    subject
+
+    expect(response).to have_http_status(:success)
   end
 end
