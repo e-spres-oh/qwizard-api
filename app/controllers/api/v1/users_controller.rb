@@ -3,11 +3,30 @@
 module Api
   module V1
     class UsersController < AuthenticatedController
-      before_action :require_authentication, except: [:recover_password, :create]
-      before_action :set_user, only: [:recover_password, :show, :update, :destroy]
+      before_action :require_authentication, except: [:recovery_token, :recover_password, :create]
+      before_action :set_user, only: [:show, :update, :destroy]
       before_action :require_authorisation, only: [:update, :destroy]
 
+      def recovery_token
+        @user = User.find_by(email: params[:email])
+
+        return head :not_found if @user.nil?
+
+        token = SecureRandom.alphanumeric
+        @user.update!(token: token)
+
+        RecoveryTokenMailer.with(user: @user).recovery_token.deliver_later
+        head :ok
+      end
+
       def recover_password
+        @user = User.find_by(token: params[:token])
+
+        return head :not_found if @user.nil?
+
+        password = SecureRandom.alphanumeric
+        @user.update!(password: password, token: nil)
+
         PasswordRecoveryMailer.with(user: @user).recover_password.deliver_later
         head :ok
       end

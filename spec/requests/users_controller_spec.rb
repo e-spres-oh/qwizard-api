@@ -146,4 +146,54 @@ RSpec.describe 'Users API', type: :request do
       expect(parsed_response).to eq(user.slice(:id, :email, :hat, :username, :created_at, :updated_at).as_json)
     end
   end
+
+  describe 'recovery token' do
+    let(:user) { FactoryBot.create(:user) }
+
+    subject { post recovery_token_api_v1_users_path(email: user.email) }
+
+    before do
+      user
+      allow(RecoveryTokenMailer).to receive(:recovery_token)
+    end
+
+    it 'responds with not found when wrong email given' do
+      post recovery_token_api_v1_users_path(email: 'random email here')
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'responds with success' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+  end
+
+  describe 'recovery password' do
+    let(:token) { Faker::Lorem.sentence }
+    let(:user) { FactoryBot.create(:user, token: token) }
+
+    subject { post recover_password_api_v1_users_path(token: token) }
+
+    before do
+      user
+      allow(PasswordRecoveryMailer).to receive(:recover_password)
+    end
+
+    it 'responds with not found when wrong email given' do
+      post recover_password_api_v1_users_path(token: 'random token here')
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'responds with success' do
+      subject
+
+      user.reload
+
+      expect(response).to have_http_status(:success)
+      expect(user.token).to eq(nil)
+    end
+  end
 end

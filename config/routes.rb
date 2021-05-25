@@ -29,7 +29,8 @@ Rails.application.routes.draw do
       get 'lobbies/from_code/:code', to: 'lobbies#from_code', as: :lobby_from_code
 
       resources :users do
-        post :recover_password, on: :member
+        post :recovery_token, on: :collection
+        post :recover_password, on: :collection
       end
 
       post :login, to: 'sessions#login'
