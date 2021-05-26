@@ -5,12 +5,20 @@ module Api
   module V1
     class UsersController < AuthenticatedController
       before_action :require_authentication, except: [:recover_password, :recovery_token, :create]
-      before_action :set_user, only: [:recover_password, :show, :update, :destroy]
+      before_action :set_user, only: [:show, :update, :destroy]
       before_action :require_authorisation, only: [:update, :destroy]
+      before_action :check_token, only: [:recover_password]
 
       def recover_password
-        PasswordRecoveryMailer.with(user: @user).recover_password.deliver_later
-        head :ok
+        @user.password = SecureRandom.base64(10)
+        @user.token = nil
+
+        if @user.save
+          PasswordRecoveryMailer.with(user: @user).recover_password.deliver_later
+          head :ok
+        else
+          render 'api/v1/model_errors', locals: { errors: @user.errors }, status: :unprocessable_entity
+        end
       end
 
       def recovery_token
@@ -60,6 +68,13 @@ module Api
       end
 
       private
+
+      def check_token
+        return head :bad_request unless params.key?(:token)
+
+        @user = User.find_by(token: params[:token])
+        return head :not_found if @user.nil?
+      end
 
       def user_params
         params.require(:user).permit(:username, :email, :password, :hat)
