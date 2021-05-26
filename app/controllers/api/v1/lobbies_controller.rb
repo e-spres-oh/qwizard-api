@@ -6,7 +6,7 @@ module Api
       before_action :require_authentication, except: [:players_done, :from_code, :join, :answer, :score]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
-      before_action :set_lobby, only: [:players_done, :start, :join, :show, :destroy, :update]
+      before_action :set_lobby, only: [:start, :join, :show, :destroy, :update, :answer]
 
       def finished
         @lobbies = Player.joins(:lobby).where(user_id: session[:user_id], 'lobby.status' => 'finished').map(&:lobby)
@@ -14,9 +14,7 @@ module Api
       end
 
       def players_done
-        @players = @lobby.players.to_a.select do |p|
-          p.player_answers.any? { |pa| pa.answer.question.id.to_s == params[:question_id] }
-        end
+        @players = PlayersDoneInLobby.new(params[:id]).call
 
         render :players_done
       end
@@ -32,11 +30,10 @@ module Api
 
         return head :not_found if player.blank?
 
-        lobby = Lobby.find(params[:id])
-        question = lobby.quiz.questions.find_by(order: lobby.current_question_index)
+        question = @lobby.quiz.questions.find_by(order: @lobby.current_question_index)
 
         create_player_answers!(player, question)
-        notify_answer_count(lobby)
+        notify_answer_count(@lobby)
 
         @answers = question.answers
         render :answer
