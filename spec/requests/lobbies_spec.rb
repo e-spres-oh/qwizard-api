@@ -430,4 +430,44 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(parsed_response).to eq([player1].as_json)
     end
   end
+
+  describe 'finished' do
+    subject { get api_v1_lobbies_finished_path }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with empty list' do
+      subject
+
+      parsed_json = JSON.parse(response.body)
+      expect(parsed_json).to eq([])
+    end
+
+    context 'one lobby finished, one lobby in progress and one pending' do
+      let(:quiz) { FactoryBot.create(:quiz, user: user) }
+      let(:lobby1) { FactoryBot.create(:lobby, quiz: quiz, status: 'pending' ) }
+      let(:lobby2) { FactoryBot.create(:lobby, quiz: quiz, status: 'in_progress') }
+      let(:lobby3) { FactoryBot.create(:lobby, quiz: quiz, status: 'finished') }
+      let(:player1) { FactoryBot.create(:player, lobby: lobby1, user: user) }
+      let(:player2) { FactoryBot.create(:player, lobby: lobby2, user: user) }
+      let(:player3) { FactoryBot.create(:player, lobby: lobby3, user: user) }
+
+      before do
+        player1
+        player2
+        player3
+      end
+
+      it 'responds with correct lobby' do
+        subject
+
+        parsed_json = JSON.parse(response.body)
+        expect(parsed_json).to eq([lobby3.as_json.merge("quiz" => lobby3.quiz.as_json.merge("image_url" => nil), "quiz_master" => lobby3.quiz.user.username)])
+      end
+    end
+  end
 end

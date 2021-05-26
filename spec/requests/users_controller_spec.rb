@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'securerandom'
 
 RSpec.describe 'Users API', type: :request do
   let(:user) { FactoryBot.create(:user) }
@@ -144,6 +145,71 @@ RSpec.describe 'Users API', type: :request do
 
       parsed_response = JSON.parse(response.body)
       expect(parsed_response).to eq(user.slice(:id, :email, :hat, :username, :created_at, :updated_at).as_json)
+    end
+  end
+
+  describe 'recovery_token' do
+    let(:user) { FactoryBot.create(:user) }
+
+    subject { post recovery_token_api_v1_users_path, params: { email: user.email } }
+
+    it 'responds with ok HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'responds with not_found if email is incorrect' do
+      user.email = 'no'
+
+      subject
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'responds with not_found if email is missing' do
+      subject_missing = post recovery_token_api_v1_users_path
+      subject_missing
+
+      expect(response).to have_http_status(:bad_request)
+    end
+  end
+
+  describe 'recover_password' do
+    let(:user) { FactoryBot.create(:user, token: SecureRandom.hex(16)) }
+
+    subject { post recover_password_api_v1_users_path, params: { token: user.token } }
+
+    before do
+      allow(PasswordRecoveryMailer).to receive(:recover_password)
+    end
+
+    it 'responds with ok HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'expects mail to have been sent with new password' do
+      subject
+
+      expect(response).to have_http_status(:ok)
+      expect(PasswordRecoveryMailer).to have_received(:recover_password).with(user: user.reload)
+    end
+
+    it 'responds with not_found if token is incorrect' do
+      user.token = 'no'
+
+      subject
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'responds with not_found if token is missing' do
+      subject_missing = post recover_password_api_v1_users_path
+      subject_missing
+
+      expect(response).to have_http_status(:bad_request)
     end
   end
 end
