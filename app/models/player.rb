@@ -5,6 +5,7 @@ class Player < ApplicationRecord
   validates :hat, presence: true
 
   belongs_to :lobby
+  belongs_to :user
   has_many :player_answers, dependent: :destroy
   has_many :players, dependent: :destroy
 
