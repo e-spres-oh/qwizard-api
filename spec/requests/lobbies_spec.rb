@@ -435,9 +435,18 @@ RSpec.describe 'LobbiesAPI', type: :request do
     let(:player1) { FactoryBot.create(:player, user: user) }
     let(:player2) { FactoryBot.create(:player, user: user) }
     let(:player3) { FactoryBot.create(:player, user: user) }
-    let(:lobby1) { FactoryBot.create(:lobby, player: player1) }
-    let(:lobby2) { FactoryBot.create(:lobby, player: player2) }
-    let(:lobby3) { FactoryBot.create(:lobby, player: player3) }
+    let(:player4) { FactoryBot.create(:player) }
+    let(:lobby1) { FactoryBot.create(:lobby, players: [player1]) }
+    let(:lobby2) { FactoryBot.create(:lobby, players: [player2]) }
+    let(:lobby3) { FactoryBot.create(:lobby, players: [player3]) }
+    let(:lobby4) { FactoryBot.create(:lobby, players: [player4]) }
+
+    before do
+      lobby1
+      lobby2
+      lobby3
+      lobby4
+    end
 
     subject { get api_v1_lobbies_finished_path }
 
@@ -445,6 +454,13 @@ RSpec.describe 'LobbiesAPI', type: :request do
       subject
 
       expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with correct body' do
+      subject
+
+      lobbies = JSON.parse(response.body)
+      expect(lobbies).to eq([lobby1, lobby2, lobby3].map { |l| l.as_json.merge('quiz_master' => l.quiz.user.username, 'quiz' => l.quiz.as_json) })
     end
   end
 end

@@ -1,4 +1,4 @@
 json.array! @result do |res|
-  json.partial! 'lobby', lobby: res.lobby
-  json.quiz res.lobby.quiz
+  json.partial! 'lobby', lobby: res
+  json.quiz res.quiz
 end

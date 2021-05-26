@@ -8,6 +8,12 @@ module Api
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
+      def finished_lobbies
+        @result = current_user.players.map(&:lobby)
+
+        render :finished_lobbies
+      end
+
       def players_done
         @players = @lobby.players.to_a.select do |p|
           p.player_answers.any? { |pa| pa.answer.question.id.to_s == params[:question_id] }
@@ -55,12 +61,6 @@ module Api
 
         Pusher.trigger(@lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
-      end
-
-      def finished_lobbies
-        @result = current_user.players.map(&:lobby)
-        
-        render :finished_lobbies
       end
 
       def from_code
