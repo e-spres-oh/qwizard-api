@@ -6,6 +6,7 @@ module Api
       before_action :require_authentication, except: [:players_done, :from_code, :join, :answer, :score]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
+      before_action :set_lobby, only: [:players_done, :start, :join, :show, :destroy, :update]
 
       def finished
         @lobbies = Player.joins(:lobby).where(user_id: session[:user_id], 'lobby.status' => 'finished').map(&:lobby)
@@ -13,8 +14,7 @@ module Api
       end
 
       def players_done
-        lobby = Lobby.find(params[:id])
-        @players = lobby.players.to_a.select do |p|
+        @players = @lobby.players.to_a.select do |p|
           p.player_answers.any? { |pa| pa.answer.question.id.to_s == params[:question_id] }
         end
 
@@ -43,7 +43,6 @@ module Api
       end
 
       def start
-        @lobby = Lobby.find(params[:id])
         @lobby.update!(status: :in_progress)
         Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
 
@@ -53,11 +52,9 @@ module Api
       end
 
       def join
-        lobby = Lobby.find(params[:id])
+        @player = @lobby.players.create(player_params)
 
-        @player = lobby.players.create(player_params)
-
-        Pusher.trigger(lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
+        Pusher.trigger(@lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
       end
 
@@ -89,13 +86,10 @@ module Api
       end
 
       def show
-        @lobby = Lobby.find(params[:id])
         render :show
       end
 
       def update
-        @lobby = Lobby.find(params[:id])
-
         if @lobby.update(lobby_params)
           render :show
         else
@@ -104,7 +98,6 @@ module Api
       end
 
       def destroy
-        @lobby = Lobby.find(params[:id])
         @lobby.destroy
 
         render :show
@@ -116,6 +109,12 @@ module Api
         lobby = Lobby.find(params[:id])
 
         head :unauthorized if lobby.quiz.user != current_user
+      end
+
+      def set_lobby
+        @lobby = Lobby.find(params[:id])
+
+        head :not_found if @lobby.nil?
       end
 
       def set_quiz
