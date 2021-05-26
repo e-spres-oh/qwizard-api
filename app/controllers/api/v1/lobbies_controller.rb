@@ -2,8 +2,9 @@
 
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
     class LobbiesController < AuthenticatedController
-      before_action :require_authentication, except: [:from_code, :join, :answer, :players_done]
+      before_action :require_authentication, except: [:from_code, :join, :answer, :players_done, :score]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
@@ -31,7 +32,7 @@ module Api
 
         render :score
       end
-      
+
       def answer
         player = Player.find_by(id: params[:player_id])
 
@@ -119,17 +120,10 @@ module Api
 
       def get_points(lobby, player)
         lobby.quiz.questions.map do |question|
-          correct_answers = question.answers.select { |answer| answer.is_correct }
-          if PlayerAnswer.where(player: player, answer: correct_answers).count == correct_answers.count == PlayerAnswer.where(player: player).count
-            question.points
-          else
-            0
+          correct_answers = question.answers.to_a.select(&:is_correct)
+          if PlayerAnswer.where(player: player, answer: correct_answers).count == correct_answers.count
+            correct_answers.count == PlayerAnswer.where(player: player).count ? question.points : 0
           end
-            #if PlayerAnswer == question.answers.select {|answer| answer.is_correct}
-          #   questions.score
-          #else
-          #   0
-          #end
         end.sum
       end
 
@@ -167,5 +161,6 @@ module Api
         params.require(:lobby).permit(:status, :current_question_index)
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
