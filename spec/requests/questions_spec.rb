@@ -24,7 +24,8 @@ RSpec.describe 'QuestionsAPI', type: :request do
       subject
 
       parsed_response = JSON.parse(response.body)
-      expect(parsed_response).to eq([foo_question.as_json.merge('image_url' => nil), bar_question.as_json.merge('image_url' => nil)].as_json)    end
+      expect(parsed_response).to eq([foo_question.as_json.merge('image_url' => nil), bar_question.as_json.merge('image_url' => nil)].as_json)    
+    end
   end
 
   describe 'create' do
