@@ -1,14 +1,28 @@
 # frozen_string_literal: true
 
+require 'securerandom'
 module Api
   module V1
     class UsersController < AuthenticatedController
-      before_action :require_authentication, except: [:recover_password, :create]
+      before_action :require_authentication, except: [:recover_password, :recovery_token, :create]
       before_action :set_user, only: [:recover_password, :show, :update, :destroy]
       before_action :require_authorisation, only: [:update, :destroy]
 
       def recover_password
         PasswordRecoveryMailer.with(user: @user).recover_password.deliver_later
+        head :ok
+      end
+
+      def recovery_token
+        return head :bad_request unless params.key?(:email)
+
+        user = User.find_by(email: params[:email])
+
+        return head :not_found if user.nil?
+
+        token = SecureRandom.hex(16)
+        user.update!(token: token)
+
         head :ok
       end
 
