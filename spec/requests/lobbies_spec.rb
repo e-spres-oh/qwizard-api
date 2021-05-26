@@ -211,6 +211,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(player.name).to eq(player_params[:name])
       expect(player.hat).to eq(player_params[:hat])
       expect(player.lobby).to eq(lobby)
+      expect(player.user_id).to eq(user.id)
     end
 
     it 'responds with the created Player model' do
@@ -370,9 +371,9 @@ RSpec.describe 'LobbiesAPI', type: :request do
       let(:question2) { FactoryBot.create(:question, quiz: player1.lobby.quiz) }
 
       before do
-        question1_correct_answer   = FactoryBot.create(:answer, question: question1, is_correct: true)
+        question1_correct_answer = FactoryBot.create(:answer, question: question1, is_correct: true)
         question1_incorrect_answer = FactoryBot.create(:answer, question: question1, is_correct: false)
-        question2_correct_answer   = FactoryBot.create(:answer, question: question2, is_correct: true)
+        question2_correct_answer = FactoryBot.create(:answer, question: question2, is_correct: true)
 
         FactoryBot.create(:player_answer, player: player1, answer: question1_correct_answer)
         FactoryBot.create(:player_answer, player: player1, answer: question2_correct_answer)
@@ -405,7 +406,6 @@ RSpec.describe 'LobbiesAPI', type: :request do
     let(:player1) { FactoryBot.create(:player, lobby: lobby) }
     let(:player2) { FactoryBot.create(:player, lobby: lobby) }
 
-
     before do
       answer = FactoryBot.create(:answer, question: question)
 
@@ -428,6 +428,39 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
       parsed_response = JSON.parse(response.body)
       expect(parsed_response).to eq([player1].as_json)
+    end
+  end
+
+  describe 'finished' do
+    let(:player1) { FactoryBot.create(:player, user: user) }
+    let(:player2) { FactoryBot.create(:player, user: user) }
+    let(:player3) { FactoryBot.create(:player, user: user) }
+    let(:player4) { FactoryBot.create(:player) }
+    let(:lobby1) { FactoryBot.create(:lobby, players: [player1]) }
+    let(:lobby2) { FactoryBot.create(:lobby, players: [player2]) }
+    let(:lobby3) { FactoryBot.create(:lobby, players: [player3]) }
+    let(:lobby4) { FactoryBot.create(:lobby, players: [player4]) }
+
+    before do
+      lobby1
+      lobby2
+      lobby3
+      lobby4
+    end
+
+    subject { get api_v1_lobbies_finished_path }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'responds with correct body' do
+      subject
+
+      lobbies = JSON.parse(response.body)
+      expect(lobbies).to eq([lobby1, lobby2, lobby3].map { |l| l.as_json.merge('quiz_master' => l.quiz.user.username, 'quiz' => l.quiz.as_json) })
     end
   end
 end

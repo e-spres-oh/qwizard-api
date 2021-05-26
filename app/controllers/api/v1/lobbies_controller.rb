@@ -4,12 +4,18 @@ module Api
   module V1
     class LobbiesController < AuthenticatedController
       before_action :require_authentication, except: [:players_done, :from_code, :join, :answer, :score]
+      before_action :set_lobby, except: [:from_code, :index, :create, :finished_lobbies]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
+      def finished_lobbies
+        @result = current_user.players.map(&:lobby)
+
+        render :finished_lobbies
+      end
+
       def players_done
-        lobby = Lobby.find(params[:id])
-        @players = lobby.players.to_a.select do |p|
+        @players = @lobby.players.to_a.select do |p|
           p.player_answers.any? { |pa| pa.answer.question.id.to_s == params[:question_id] }
         end
 
@@ -17,13 +23,11 @@ module Api
       end
 
       def score
-        lobby = Lobby.find(params[:id])
-
-        @scores = lobby.players.map do |player|
+        @scores = @lobby.players.map do |player|
           {
             name: player.name,
             hat: player.hat,
-            points: calculate_score(player)
+            points: CalculateScore.new.call(player)
           }
         end
 
@@ -35,18 +39,15 @@ module Api
 
         return head :not_found if player.blank?
 
-        lobby = Lobby.find(params[:id])
-        question = lobby.quiz.questions.find_by(order: lobby.current_question_index)
+        question = @lobby.quiz.questions.find_by(order: @lobby.current_question_index)
 
-        create_player_answers!(player, question)
-        notify_answer_count(lobby)
+        AddAnswers.new.call(@lobby, player, question, params[:answers])
 
         @answers = question.answers
         render :answer
       end
 
       def start
-        @lobby = Lobby.find(params[:id])
         @lobby.update!(status: :in_progress)
         Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
 
@@ -56,11 +57,9 @@ module Api
       end
 
       def join
-        lobby = Lobby.find(params[:id])
+        @player = @lobby.players.create(player_params.merge(user: current_user))
 
-        @player = lobby.players.create(player_params)
-
-        Pusher.trigger(lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
+        Pusher.trigger(@lobby.code, Lobby::PLAYER_JOIN, { id: @player.id })
         render :player, status: :created
       end
 
@@ -92,13 +91,10 @@ module Api
       end
 
       def show
-        @lobby = Lobby.find(params[:id])
         render :show
       end
 
       def update
-        @lobby = Lobby.find(params[:id])
-
         if @lobby.update(lobby_params)
           render :show
         else
@@ -107,7 +103,6 @@ module Api
       end
 
       def destroy
-        @lobby = Lobby.find(params[:id])
         @lobby.destroy
 
         render :show
@@ -116,47 +111,15 @@ module Api
       private
 
       def require_authorisation
-        lobby = Lobby.find(params[:id])
-
-        head :unauthorized if lobby.quiz.user != current_user
+        head :unauthorized if @lobby.quiz.user != current_user
       end
 
       def set_quiz
         @quiz = Quiz.find(params[:quiz_id])
       end
 
-      def calculate_score(player)
-        score = 0
-        grouped_player_answers = player.player_answers.group_by { |player_answer| player_answer.answer.question }
-
-        grouped_player_answers.each do |question, player_answers|
-          next unless answered_correctly?(player_answers, question)
-
-          score += question.points
-        end
-
-        score
-      end
-
-      def answered_correctly?(player_answers, question)
-        player_answers.none? { |player_answer| player_answer.answer.is_correct == false } &&
-          player_answers.count == question.answers.select(&:is_correct).count
-      end
-
-      def create_player_answers!(player, question)
-        PlayerAnswer.where(player: player, answer_id: question.answers.map(&:id)).destroy_all
-
-        params[:answers].each do |id|
-          answer = Answer.find(id)
-          PlayerAnswer.create(player: player, answer: answer)
-        end
-      end
-
-      def notify_answer_count(lobby)
-        players = lobby.players.to_a.select do |p|
-          p.player_answers.any? { |pa| pa.answer.question.order == lobby.current_question_index }
-        end
-        Pusher.trigger(lobby.code, Lobby::ANSWER_SENT, { answer_count: players.count })
+      def set_lobby
+        @lobby = Lobby.find(params[:id])
       end
 
       def player_params

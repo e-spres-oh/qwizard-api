@@ -3,6 +3,8 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: 'json' } do
     namespace :v1 do
+      get 'lobbies/finished/', action: :finished_lobbies, controller: 'lobbies', as: :lobbies_finished
+
       resources :quizzes do
         get 'suggest_question', action: :suggest_question, on: :collection
         post 'upload_image', action: :upload_image, on: :member
@@ -29,7 +31,8 @@ Rails.application.routes.draw do
       get 'lobbies/from_code/:code', to: 'lobbies#from_code', as: :lobby_from_code
 
       resources :users do
-        post :recover_password, on: :member
+        post :recovery_token, on: :collection
+        post :recover_password, on: :collection
       end
 
       post :login, to: 'sessions#login'
