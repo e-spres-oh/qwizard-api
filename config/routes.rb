@@ -30,6 +30,7 @@ Rails.application.routes.draw do
 
       resources :users do
         post :recover_password, on: :member
+        post :recovery_token, on: :collection
       end
 
       post :login, to: 'sessions#login'
