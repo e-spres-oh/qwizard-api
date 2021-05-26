@@ -7,6 +7,7 @@ class User < ApplicationRecord
   validates :token, uniqueness: { allow_blank: true }
 
   has_many :quizzes, dependent: :destroy
+  has_many :players, dependent: :destroy
 
   enum hat: [:star, :earth, :spiral, :gnome, :nature, :fire, :swamp, :water]
 end

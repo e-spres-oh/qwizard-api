@@ -134,7 +134,7 @@ module Api
       end
 
       def player_params
-        params.require(:player).permit(:name, :hat)
+        params.require(:player).permit(:name, :hat).merge(user_id: session[:user_id])
       end
 
       def lobby_params
