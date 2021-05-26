@@ -33,7 +33,7 @@ Rails.application.configure do
   config.action_dispatch.cookies_same_site_protection = :none
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  config.active_storage.service = :amazon
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -58,6 +58,17 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "quizard_api_production"
 
   config.action_mailer.perform_caching = false
+
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.default_url_options = { host: 'https://qwizard-lab.herokuapp.com', port: ENV['PORT'] }
+  config.action_mailer.smtp_settings = {
+    address: 'smtp.dreamhost.com',
+    port: 587,
+    user_name: ENV['DREAMHOST_SMTP_LOGIN'],
+    password: ENV['DREAMHOST_SMTP_PASSWORD'],
+    domain: 'qwizard-lab.heroku.com',
+    authentication: :plain
+  }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
