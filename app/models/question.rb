@@ -10,6 +10,9 @@ class Question < ApplicationRecord
   enum answer_type: [:single, :multiple]
 
   belongs_to :quiz
+
   has_many :answers, dependent: :destroy
   has_many :player_answers, through: :answers
+
+  has_one_attached :image
 end
