@@ -2,10 +2,36 @@
 
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
     class LobbiesController < AuthenticatedController
-      before_action :require_authentication, except: [:from_code, :join, :answer]
+      before_action :require_authentication, except: [:from_code, :join, :answer, :players_done, :score]
       before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
+
+      def players_done
+        @lobby = Lobby.find(params[:id])
+        question = Question.find_by(id: params[:question_id])
+
+        return head :not_found if question.blank?
+
+        @players = PlayerAnswer.where(answer_id: question.answers(&:id), player_id: @lobby.players(&:id)).uniq
+
+        render :players
+      end
+
+      def score
+        lobby = Lobby.find(params[:id])
+
+        @results = lobby.players.map do |player|
+          {
+            name: player.name,
+            hat: player.hat,
+            points: get_points(lobby, player)
+          }
+        end
+
+        render :score
+      end
 
       def answer
         player = Player.find_by(id: params[:player_id])
@@ -92,6 +118,15 @@ module Api
 
       private
 
+      def get_points(lobby, player)
+        lobby.quiz.questions.map do |question|
+          correct_answers = question.answers.to_a.select(&:is_correct)
+          if PlayerAnswer.where(player: player, answer: correct_answers).count == correct_answers.count
+            correct_answers.count == PlayerAnswer.where(player: player).count ? question.points : 0
+          end
+        end.sum
+      end
+
       def require_authorisation
         lobby = Lobby.find(params[:id])
 
@@ -126,5 +161,6 @@ module Api
         params.require(:lobby).permit(:status, :current_question_index)
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
