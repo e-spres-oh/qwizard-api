@@ -243,6 +243,12 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(response).to have_http_status(:success)
     end
 
+    it 'sets the Lobby status to in_progress' do
+      subject
+
+      expect(lobby.reload.status).to eq('in_progress')
+    end
+
     it 'triggers a LOBBY_START Pusher event' do
       subject
 
@@ -276,8 +282,7 @@ RSpec.describe 'LobbiesAPI', type: :request do
 
       expect(PlayerAnswer.find_by(player: player, answer: first_answer)).to be_present
       expect(PlayerAnswer.find_by(player: player, answer: second_answer)).to be_present
-      expect(PlayerAnswer.find_by(player: player, answer: second_answer)).to be_present
-
+      expect(PlayerAnswer.find_by(player: player, answer: third_answer)).to be_present
     end
 
     it 'triggers a ANSWER_SENT Pusher event' do
