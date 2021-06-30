@@ -226,4 +226,69 @@ RSpec.describe 'LobbiesAPI', type: :request do
       expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::PLAYER_JOIN, { id: Player.last.id })
     end
   end
+
+  describe 'start' do
+    let(:quiz) { FactoryBot.create(:quiz, user: user) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+    end
+
+    subject { post start_api_v1_lobby_path(id: lobby.id) }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'sets the Lobby status to in_progress' do
+      subject
+
+      expect(lobby.reload.status).to eq('in_progress')
+    end
+
+    it 'triggers a LOBBY_START Pusher event' do
+      subject
+
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::LOBBY_START, {})
+    end
+  end
+
+  describe 'answer' do
+    let(:quiz) { FactoryBot.create(:quiz) }
+    let(:lobby) { FactoryBot.create(:lobby, quiz: quiz) }
+    let(:player) { FactoryBot.create(:player, lobby: lobby) }
+    let(:question) { FactoryBot.create(:question, quiz: quiz) }
+    let(:first_answer) { FactoryBot.create(:answer, question: question) }
+    let(:second_answer) { FactoryBot.create(:answer, question: question) }
+    let(:third_answer) { FactoryBot.create(:answer, question: question) }
+
+    before do
+      allow(Pusher).to receive(:trigger)
+    end
+
+    subject { post answer_api_v1_lobby_path(id: lobby.id), params: { player_id: player.id, answers: [first_answer.id, second_answer.id, third_answer.id] } }
+
+    it 'responds with successful HTTP status' do
+      subject
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'creates PlayerAnswer models for the specified request params' do
+      subject
+
+      expect(PlayerAnswer.find_by(player: player, answer: first_answer)).to be_present
+      expect(PlayerAnswer.find_by(player: player, answer: second_answer)).to be_present
+      expect(PlayerAnswer.find_by(player: player, answer: third_answer)).to be_present
+    end
+
+    it 'triggers a ANSWER_SENT Pusher event' do
+      subject
+
+      expect(Pusher).to have_received(:trigger).with(lobby.code, Lobby::ANSWER_SENT, { answer_count: 1 })
+    end
+  end
 end

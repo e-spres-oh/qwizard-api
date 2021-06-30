@@ -3,8 +3,8 @@
 module Api
   module V1
     class LobbiesController < AuthenticatedController
-      before_action :require_authentication, except: [:from_code, :join]
-      before_action :require_authorisation, only: [:show, :update, :destroy]
+      before_action :require_authentication, except: [:from_code, :join, :answer]
+      before_action :require_authorisation, only: [:show, :update, :destroy, :start]
       before_action :set_quiz, only: [:index, :create]
 
       def join
@@ -22,6 +22,52 @@ module Api
         return head :not_found if @lobby.nil?
 
         render :show
+      end
+
+      def start
+        @lobby = Lobby.find(params[:id])
+
+        if @lobby.update(status: :in_progress)
+          Pusher.trigger(@lobby.code, Lobby::LOBBY_START, {})
+          render :show
+        else
+          render 'api/v1/model_errors', locals: { errors: @lobby.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def answer
+        lobby = Lobby.find(params[:id])
+        player = Player.find_by(id: params[:player_id])
+        return head :not_found if player.nil?
+
+        delete_player_answers(lobby, player)
+        create_player_answer_model!(player)
+        send_answer_count_to_pusher(lobby)
+        render :answer
+      end
+
+      def delete_player_answers(lobby, player)
+        current_question = lobby.quiz.questions.find_by(order: lobby.current_question_index)
+        @answers = current_question.answers
+        PlayerAnswer.where(player: player, answer: @answers).destroy_all
+      end
+
+      def create_player_answer_model!(player)
+        params[:answers].each do |answer_id|
+          answer = Answer.find(answer_id)
+          PlayerAnswer.create(player: player, answer: answer)
+        end
+      end
+
+      def send_answer_count_to_pusher(lobby)
+        players_list = lobby.players.to_a
+        answers = lobby.quiz.questions.find_by(order: lobby.current_question_index).answers
+        players_list.each do |player|
+          player.player_answers.any? do |player_answer|
+            player_answer.answer.in?(answers)
+          end
+        end
+        Pusher.trigger(lobby.code, Lobby::ANSWER_SENT, { answer_count: players_list.count })
       end
 
       def index
